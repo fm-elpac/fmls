@@ -22,8 +22,8 @@ FMLS: 基于 系统的自组织原理 的小规模设备网络.
 
 目标是实现多种设备类型, 多种操作系统 (多种 CPU) 等的方便互连.
 设备类型有: 台式机, 笔记本, 手机, 平板, 机架服务器, 路由器, 电视盒子, 单板机 (SBC), VR 设备, 单片机 (MCU) 等.
-操作系统有: GNU/Linux, Android, Windows, OpenWRT, fuchsia 等.
-CPU 有: x86_64, aarch64, rv64gc, rv32imc 等.
+操作系统有: GNU/Linux, Android, Windows, OpenWrt, fuchsia 等.
+CPU 有: x86_64, aarch64, rv64gc, rv32imc, rv32ec 等.
 
 IP 网络 (以及物理层 有线以太网, 无线 wifi) 虽然可以实现多设备互连,
 但实际使用很不方便:
