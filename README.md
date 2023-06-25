@@ -10,6 +10,8 @@
 镜像:
 + TODO
 
+([English document](./doc/en))
+
 
 ## 简介
 
