@@ -125,7 +125,7 @@ impl From<MsgTypeS> for u8 {
 }
 
 /// 一条消息
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Msg {
     /// 自定义消息
     A(MsgA),
@@ -133,6 +133,17 @@ pub enum Msg {
     Req(MsgReq),
     /// 预定义 响应消息
     Res(MsgRes),
+}
+
+impl Msg {
+    /// 获取消息类型
+    pub fn t(&self) -> MsgType {
+        match self {
+            Msg::A(i) => i.t(),
+            Msg::Req(i) => i.t(),
+            Msg::Res(i) => i.t(),
+        }
+    }
 }
 
 impl From<Msg> for Vec<u8> {
@@ -152,6 +163,13 @@ pub struct MsgA {
     pub t: MsgType,
     /// 附加数据 (可选)
     pub data: Option<Vec<u8>>,
+}
+
+impl MsgA {
+    /// 获取消息类型
+    pub fn t(&self) -> MsgType {
+        self.t
+    }
 }
 
 impl From<MsgA> for Vec<u8> {
@@ -190,10 +208,20 @@ impl From<Vec<u8>> for MsgA {
 }
 
 /// 预定义 请求消息
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum MsgReq {
     V,
     C(ConfItem),
+}
+
+impl MsgReq {
+    /// 获取消息类型
+    pub fn t(&self) -> MsgType {
+        match self {
+            MsgReq::V => MsgType::Req(MsgTypeReq::V),
+            MsgReq::C(_) => MsgType::Req(MsgTypeReq::C),
+        }
+    }
 }
 
 impl From<MsgReq> for Vec<u8> {
@@ -211,7 +239,7 @@ impl From<MsgReq> for Vec<u8> {
 }
 
 /// 预定义 响应消息
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum MsgRes {
     /// `V` 版本信息
     V(MsgResV),
@@ -221,6 +249,18 @@ pub enum MsgRes {
     K(Option<Vec<u8>>),
     /// `CK=V`
     C(ConfItem),
+}
+
+impl MsgRes {
+    /// 获取消息类型
+    pub fn t(&self) -> MsgType {
+        match self {
+            MsgRes::V(_) => MsgType::Res(MsgTypeRes::V),
+            MsgRes::E(_) => MsgType::Res(MsgTypeRes::E),
+            MsgRes::K(_) => MsgType::Res(MsgTypeRes::K),
+            MsgRes::C(_) => MsgType::Res(MsgTypeRes::C),
+        }
+    }
 }
 
 impl From<MsgRes> for Vec<u8> {
@@ -358,7 +398,7 @@ impl From<Vec<u8>> for ConfItem {
 }
 
 /// 预定义响应消息 `V`
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MsgResV {
     /// 原始附加数据
     pub raw: Option<Vec<u8>>,
@@ -596,6 +636,42 @@ mod test {
                 <Vec<u8> as From<&[u8]>>::from(b"a"),
                 Some(<Vec<u8> as From<&[u8]>>::from(b"1"))
             ))
+        );
+    }
+
+    #[test]
+    fn msg_to_type() {
+        assert_eq!(
+            Msg::A(MsgA {
+                t: MsgType::from(0),
+                data: None,
+            })
+            .t(),
+            MsgType::S(MsgTypeS::Type(0))
+        );
+        assert_eq!(Msg::Req(MsgReq::V).t(), MsgType::Req(MsgTypeReq::V));
+        assert_eq!(
+            Msg::Req(MsgReq::C(ConfItem::T1(None))).t(),
+            MsgType::Req(MsgTypeReq::C)
+        );
+        assert_eq!(
+            Msg::Res(MsgRes::V(MsgResV {
+                raw: None,
+                p: Vec::new(),
+                firmware: Vec::new(),
+                hardware: Vec::new(),
+            }))
+            .t(),
+            MsgType::Res(MsgTypeRes::V)
+        );
+        assert_eq!(
+            Msg::Res(MsgRes::E((1, None))).t(),
+            MsgType::Res(MsgTypeRes::E)
+        );
+        assert_eq!(Msg::Res(MsgRes::K(None)).t(), MsgType::Res(MsgTypeRes::K));
+        assert_eq!(
+            Msg::Res(MsgRes::C(ConfItem::T1(None))).t(),
+            MsgType::Res(MsgTypeRes::C)
         );
     }
 }
