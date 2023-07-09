@@ -423,6 +423,7 @@ impl From<MsgResV> for Vec<u8> {
 }
 
 // server
+mod escape_crc;
 mod server;
 
 pub use server::R2c3pServer;

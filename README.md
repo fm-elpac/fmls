@@ -107,7 +107,7 @@ FMLS 的整体设计目标如下:
 5. **基于 web 技术**:
    web 技术在跨多平台方面, 相对是最好的, 同时使用及开发都比较简单.
 
-   (比如 vue, electron, GeckoView)
+   (比如 deno, electron, tauri)
 
 6. 优先使用 IPv6.
 
@@ -132,21 +132,22 @@ FMLS 的整体设计目标如下:
 
   - `fmls-cli`: 命令行界面
 
-+ **fmls-vue**
++ **fmls-ui**
 
   图形界面.
-  编程语言: js, rust.
+  编程语言: js (typescript), rust.
   LICENSE: GPLv3+
 
   支持 GNU/Linux, Windows 等 PC 平台.
 
   主要依赖:
 
-  - [vue3](https://vuejs.org/)
+  - [deno](https://deno.land/) / [fresh](https://fresh.deno.dev/)
+    (backend)
 
-  - [electron](https://www.electronjs.org/)
+  - [electron](https://www.electronjs.org/) (GNU/Linux)
 
-  - [sqlite3](https://www.sqlite.org/index.html)
+  - [tauri](https://tauri.app/) (Windows)
 
 + **fmls-apk**
 
@@ -158,7 +159,7 @@ FMLS 的整体设计目标如下:
 
   主要依赖:
 
-  - [GeckoView](https://mozilla.github.io/geckoview/)
+  - WebView
 
 
 ## LICENSE
