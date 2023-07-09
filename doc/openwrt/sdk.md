@@ -1,29 +1,33 @@
 # OpenWrt SDK
+
 <https://openwrt.org/docs/guide-developer/toolchain/using_the_sdk>
 
 SDK 可用于编译单个软件包.
 
 各个 CPU 架构 / 目标平台的 SDK 需要分别单独下载, 比如:
 
-+ <https://downloads.openwrt.org/releases/22.03.5/targets/x86/64/>
+- <https://downloads.openwrt.org/releases/22.03.5/targets/x86/64/>
 
   目标 (target): `x86/64`
 
   软件包架构: [`x86_64`](https://openwrt.org/docs/techref/instructionset/x86_64)
 
-  SDK: <https://downloads.openwrt.org/releases/22.03.5/targets/x86/64/openwrt-sdk-22.03.5-x86-64_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
+  SDK:
+  <https://downloads.openwrt.org/releases/22.03.5/targets/x86/64/openwrt-sdk-22.03.5-x86-64_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
 
   适用设备:
 
   - x86_64 虚拟机
 
-+ <https://downloads.openwrt.org/releases/22.03.5/targets/mediatek/mt7622/>
+- <https://downloads.openwrt.org/releases/22.03.5/targets/mediatek/mt7622/>
 
   目标 (target): `mediatek/mt7622`
 
-  软件包架构: [`aarch64_cortex-a53`](https://openwrt.org/docs/techref/instructionset/aarch64_cortex-a53)
+  软件包架构:
+  [`aarch64_cortex-a53`](https://openwrt.org/docs/techref/instructionset/aarch64_cortex-a53)
 
-  SDK: <https://downloads.openwrt.org/releases/22.03.5/targets/mediatek/mt7622/openwrt-sdk-22.03.5-mediatek-mt7622_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
+  SDK:
+  <https://downloads.openwrt.org/releases/22.03.5/targets/mediatek/mt7622/openwrt-sdk-22.03.5-mediatek-mt7622_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
 
   适用设备:
 
@@ -31,34 +35,39 @@ SDK 可用于编译单个软件包.
 
     128MB SPI NAND flash, 256MB RAM
 
-+ <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt7621/>
+- <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt7621/>
 
   目标 (target): `ramips/mt7621`
 
-  软件包架构: [`mipsel_24kc`](https://openwrt.org/docs/techref/instructionset/mipsel_24kc)
+  软件包架构:
+  [`mipsel_24kc`](https://openwrt.org/docs/techref/instructionset/mipsel_24kc)
 
-  SDK: <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt7621/openwrt-sdk-22.03.5-ramips-mt7621_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
+  SDK:
+  <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt7621/openwrt-sdk-22.03.5-ramips-mt7621_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
 
   适用设备:
 
-  - 路由器 [小米 cr6606](https://openwrt.org/toh/hwdata/xiaomi/xiaomi_mi_router_cr6606)
+  - 路由器
+    [小米 cr6606](https://openwrt.org/toh/hwdata/xiaomi/xiaomi_mi_router_cr6606)
 
     128MB NAND flash, 256MB RAM
 
-+ <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt76x8/>
+- <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt76x8/>
 
   目标 (target): `ramips/mt7628`
 
-  软件包架构: [`mipsel_24kc`](https://openwrt.org/docs/techref/instructionset/mipsel_24kc)
+  软件包架构:
+  [`mipsel_24kc`](https://openwrt.org/docs/techref/instructionset/mipsel_24kc)
 
-  SDK: <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt76x8/openwrt-sdk-22.03.5-ramips-mt76x8_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
+  SDK:
+  <https://downloads.openwrt.org/releases/22.03.5/targets/ramips/mt76x8/openwrt-sdk-22.03.5-ramips-mt76x8_gcc-11.2.0_musl.Linux-x86_64.tar.xz>
 
   适用设备:
 
-  - 路由器 [小米 wifi nano (小米路由器青春版) R1CL](https://openwrt.org/toh/xiaomi/miwifi_nano)
+  - 路由器
+    [小米 wifi nano (小米路由器青春版) R1CL](https://openwrt.org/toh/xiaomi/miwifi_nano)
 
     16MB SPI NAND flash, 64MB RAM
-
 
 ## 编译 rust 程序
 

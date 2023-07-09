@@ -4,59 +4,51 @@ FMLS 命令行界面.
 
 命令行界面设计为高级用户使用, 并不对一般用户进行优化.
 
-
 ## 线程
 
 `fmls-cli` 使用单线程设计.
-
 
 ## 全局命令参数
 
 TODO
 
-
 ## 环境变量
 
-+ `FMLSD=` 指定连接到 fmlsd 的本地应用接口的地址
+- `FMLSD=` 指定连接到 fmlsd 的本地应用接口的地址
 
   比如 `FMLSD=/run/user/1000/fmls/fmlsd2.s`
 
 TODO
 
-
 ## 版本和帮助
 
-+ `fmls --version`
+- `fmls --version`
 
   查看版本信息.
 
-+ `fmls --help`
+- `fmls --help`
 
   查看命令行帮助信息.
-
 
 ## 命令缩写
 
 在同级命令不混淆的情况下, 支持缩写.
 
-比如 `fmls status` (完整命令),
-可以缩写为 `fmls st`.
-
+比如 `fmls status` (完整命令), 可以缩写为 `fmls st`.
 
 ## 一级命令
 
-+ `fmls status` 状态查看
+- `fmls status` 状态查看
 
-+ `fmls ca` 证书签发
+- `fmls ca` 证书签发
 
-+ `fmls neighbor` 邻居发现
+- `fmls neighbor` 邻居发现
 
-+ `fmls info` 节点自定义信息
+- `fmls info` 节点自定义信息
 
-+ `fmls nc` 命名通道
+- `fmls nc` 命名通道
 
-+ `fmls tc` 透明通道
-
+- `fmls tc` 透明通道
 
 ## 状态查看命令
 
@@ -64,28 +56,27 @@ TODO
 > fmls status
 ```
 
-+ `fmls status`
+- `fmls status`
 
   当前状态简单总结.
 
-+ `fmls status dev`
+- `fmls status dev`
 
   查看本机网络接口信息.
 
-+ `fmls status neighbor`
+- `fmls status neighbor`
 
   查看邻居状态表.
 
-+ `fmls status route`
+- `fmls status route`
 
   查看路由转发表.
 
-+ `fmls status local`
+- `fmls status local`
 
   查看本地应用接口状态.
 
 TODO
-
 
 ## 证书签发命令
 
@@ -93,40 +84,39 @@ TODO
 > fmls ca
 ```
 
-+ `fmls ca`
+- `fmls ca`
 
   查看证书状态 (信任域).
 
-+ `fmls ca list`
+- `fmls ca list`
 
   查看可用的 CA 邻居 (服务器).
 
-+ `fmls ca request`
+- `fmls ca request`
 
   请求签发证书 (上传公钥).
 
-+ `fmls ca get`
+- `fmls ca get`
 
   下载签发的证书.
 
-+ `fmls ca server`
+- `fmls ca server`
 
   启动 CA 服务器.
 
-+ `fmls ca sign`
+- `fmls ca sign`
 
   进行签发证书 (自己是 CA).
 
-+ `fmls ca rm`
+- `fmls ca rm`
 
   删除证书.
 
-+ `fmls ca enable`
+- `fmls ca enable`
 
   启用/禁用自己已经加入的信任域的证书.
 
   `fmls ca en ID 1` 表示启用, `fmls ca en ID 0` 表示禁用.
-
 
 ## 邻居设备发现
 
@@ -134,14 +124,13 @@ TODO
 > fmls neighbor
 ```
 
-+ `fmls neighbor`
+- `fmls neighbor`
 
   查看邻居节点列表.
 
-+ `fmls neighbor R`
+- `fmls neighbor R`
 
   查看某个邻居节点的设备信息.
-
 
 ## 节点自定义信息
 
@@ -149,22 +138,21 @@ TODO
 > fmls info
 ```
 
-+ `fmls info`
+- `fmls info`
 
   查看当前实例的自定义信息.
 
-+ `fmls info R`
+- `fmls info R`
 
   查看别的设备的自定义信息.
 
-+ `fmls info set K V`
+- `fmls info set K V`
 
   设置一个自定义信息.
 
-+ `fmls info rm K`
+- `fmls info rm K`
 
   移除一个自定义信息.
-
 
 ## 命名通道功能
 
@@ -172,26 +160,25 @@ TODO
 > fmls nc
 ```
 
-+ `fmls nc`
+- `fmls nc`
 
   查看当前已经注册的所有命名通道.
 
-+ `fmls nc add N`
+- `fmls nc add N`
 
   注册一个命名通道.
 
-+ `fmls nc rm N`
+- `fmls nc rm N`
 
   删除一个命名通道.
 
-+ `fmls nc send R N`
+- `fmls nc send R N`
 
   向某个设备 (公钥) 的某个命名通道 (名称) 发送消息.
 
-+ `fmls nc listen N`
+- `fmls nc listen N`
 
   从某个命名通道接收消息.
-
 
 ## 透明通道功能
 
@@ -199,27 +186,26 @@ TODO
 > fmls tc
 ```
 
-+ `fmls tc`
+- `fmls tc`
 
   查看当前已连接的透明通道.
 
-+ `fmls tc new R`
+- `fmls tc new R`
 
   创建一个新的透明通道 (连接目标设备 R).
 
-+ `fmls tc close ID`
+- `fmls tc close ID`
 
   关闭一个透明通道.
 
-+ `fmls tc send ID`
+- `fmls tc send ID`
 
   通过透明通道发送数据.
 
-+ `fmls tc recv ID`
+- `fmls tc recv ID`
 
   通过透明通道接收数据.
 
-
-----
+---
 
 TODO

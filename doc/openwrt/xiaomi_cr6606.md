@@ -14,7 +14,7 @@ tree	677ebc63b57d84e25fc590483a6a37902a88b3c9
 parent	e0683839b8036388213d7662f3e0066a29b7d480
 ```
 
-``````
+````
 ramips: add support for Xiaomi Mi Router CR660x series
 
 Xiaomi Mi Router CR6606 is a Wi-Fi6 AX1800 Router with 4 GbE Ports.
@@ -147,8 +147,7 @@ Additional Info:
     legacy image instead.
 
 Signed-off-by: Raymond Wang <infiwang@pm.me>
-``````
-
+````
 
 ## 解释
 
@@ -156,8 +155,8 @@ Signed-off-by: Raymond Wang <infiwang@pm.me>
 
 需要一个已经安装 OpenWrt 的无线路由器 (以下称为 A)
 
-在 A 的 `/usr/lib/lua/luci/controller/admin/xqsystem.lua`
-位置放置文件 [`xqsystem.lua`](./cr6606/xqsystem.lua)
+在 A 的 `/usr/lib/lua/luci/controller/admin/xqsystem.lua` 位置放置文件
+[`xqsystem.lua`](./cr6606/xqsystem.lua)
 
 ### 2 测试 A
 
@@ -189,7 +188,8 @@ Signed-off-by: Raymond Wang <infiwang@pm.me>
 
 ### 6 操作 B
 
-6.1 访问 `http://{B 的 IP}/cgi-bin/luci/;stok={STOK}/api/misystem/extendwifi_connect?ssid={WIFI_NAME}&password={PASSWORD}`
+6.1 访问
+`http://{B 的 IP}/cgi-bin/luci/;stok={STOK}/api/misystem/extendwifi_connect?ssid={WIFI_NAME}&password={PASSWORD}`
 
 其中 `{WIFI_NAME}` 是 A 的无线 SSID 名称, `{PASSWORD}` 是 A 的无线密码.
 
@@ -199,7 +199,8 @@ Signed-off-by: Raymond Wang <infiwang@pm.me>
 {"msg":"connect succces!","code":0}
 ```
 
-6.2 访问 `http://{B 的 IP}/cgi-bin/luci/;stok={STOK}/api/xqsystem/oneclick_get_remote_token?username=xxx&password=xxx&nonce=xxx`
+6.2 访问
+`http://{B 的 IP}/cgi-bin/luci/;stok={STOK}/api/xqsystem/oneclick_get_remote_token?username=xxx&password=xxx&nonce=xxx`
 
 ```
 {"token":"; nvram set ssh_en=1; nvram commit; sed -i 's/channel=.*/channel=\u0022debug\u0022/g' /etc/init.d/dropbear; /etc/init.d/dropbear start; passwd -d root;","code":0}
@@ -243,7 +244,7 @@ There is no root password defined on this device!
 Use the "passwd" command to set up a new password
 in order to prevent unauthorized SSH logins.
 --------------------------------------------------
-root@XiaoQiang:~# 
+root@XiaoQiang:~#
 ```
 
 ### 8 备份原版固件
@@ -256,7 +257,7 @@ root@XiaoQiang:~#
 root@XiaoQiang:~# cd /tmp
 root@XiaoQiang:/tmp# mkdir -p syslogbackup
 root@XiaoQiang:/tmp# cd syslogbackup
-root@XiaoQiang:/tmp/syslogbackup# 
+root@XiaoQiang:/tmp/syslogbackup#
 ```
 
 这是 flash 分区表:
@@ -279,7 +280,8 @@ mtd11: 03200000 00020000 "overlay"
 mtd12: 01000000 00020000 "obr"
 ```
 
-建议备份以下分区 (9): bootloader, nvram, bdata, crash, crash_log, firmware, firmware1, overlay, obr.
+建议备份以下分区 (9): bootloader, nvram, bdata, crash, crash_log, firmware,
+firmware1, overlay, obr.
 
 ```
 root@XiaoQiang:/tmp/syslogbackup# dd if=/dev/mtd0 of=mtd0-bootloader.img
@@ -340,7 +342,7 @@ root@XiaoQiang:/tmp/syslogbackup# dd if=/dev/mtd6 of=mtd6-firmware.img
 31457280 bytes (30.0MB) copied, 12.973654 seconds, 2.3MB/s
 root@XiaoQiang:/tmp/syslogbackup# dd if=/dev/mtd7 of=mtd7-firmware1.img
 31457280 bytes (30.0MB) copied, 12.987313 seconds, 2.3MB/s
-root@XiaoQiang:/tmp/syslogbackup# 
+root@XiaoQiang:/tmp/syslogbackup#
 ```
 
 继续下载:

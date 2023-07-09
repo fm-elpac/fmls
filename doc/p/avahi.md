@@ -1,14 +1,13 @@
 # 关于 Avahi
 
 相关链接:
-+ <https://avahi.org/>
-+ <https://github.com/lathiat/avahi>
 
-Avahi 是 GNU/Linux 平台的 mDNS/DNS-SD 实现.
-比如 ArchLinux 默认安装了 avahi.
+- <https://avahi.org/>
+- <https://github.com/lathiat/avahi>
+
+Avahi 是 GNU/Linux 平台的 mDNS/DNS-SD 实现. 比如 ArchLinux 默认安装了 avahi.
 
 FMLS 在 GNU/Linux 平台使用 avahi 进行 mDNS/DNS-SD 邻居发现.
-
 
 ## Avahi 的安装和配置 (ArchLinux)
 
@@ -35,8 +34,7 @@ FMLS 在 GNU/Linux 平台使用 avahi 进行 mDNS/DNS-SD 邻居发现.
 > sudo systemctl start avahi-daemon
 ```
 
-4 配置文件:
-`/etc/nsswitch.conf`
+4 配置文件: `/etc/nsswitch.conf`
 
 把其中的:
 
@@ -66,6 +64,5 @@ Established under name 'a666'
 ```sh
 > avahi-browse -art
 ```
-
 
 TODO
