@@ -1,0 +1,30 @@
+[package]
+name = "fmls-cli"
+version = "0.1.0-a1"
+edition = "2021"
+license = "LGPL-3.0-or-later"
+
+authors = ["secext2022 <secext2022@outlook.com>"]
+repository = "https://github.com/fm-elpac/fmls"
+description = "CLI of FMLS"
+keywords = ["fmls"]
+categories = ["command-line-utilities", "network-programming", "authentication"]
+
+[dependencies]
+libfmls = { path = "../libfmls", default-features = false }
+
+log = "^0.4.19"
+env_logger = "^0.10.0"
+
+[build-dependencies]
+built = { version = "^0.6.1" }
+vergen = { version = "^8.2.4", features = ["build", "git", "gitcl"] }
+
+[features]
+default = ["gnu", "quic-quiche"]
+
+gnu = ["libfmls/gnu"]
+openwrt = ["libfmls/openwrt"]
+quic-quiche = ["libfmls/quic-quiche"]
+quic-s2n = ["libfmls/quic-s2n"]
+quic-quinn = ["libfmls/quic-quinn"]

@@ -1,0 +1,30 @@
+[workspace]
+
+members = [
+  # (no_std) 公共基础库
+  "libfmlsc",
+
+  # (no_std) 用于 (r2) 低资源设备 (比如 单片机)
+  "libfmlsm",
+
+  # 标准基础库
+  "libfmls",
+
+  # 守护进程, 用于后台运行 (系统实例, 用户实例, systemd)
+  "fmlsd",
+
+  # 命令行界面
+  "fmls-cli",
+
+  # fmls_r2c3p 协议, r1 运行的上位机
+  "fmls-r2d",
+]
+
+# 发布编译设置
+[profile.release]
+strip = true
+lto = true
+
+[patch.crates-io]
+#s2n-tls-sys = { path = "./patch/s2n-tls-sys-0.0.29" }
+#aws-lc-rs = { path = "./patch/aws-lc-rs-1.2.1" }

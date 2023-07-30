@@ -1,0 +1,41 @@
+[package]
+name = "sled"
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0-or-later"
+
+authors = ["secext2022 <secext2022@outlook.com>"]
+repository = "https://github.com/fm-elpac/fmls"
+
+[dependencies]
+libfmlsm = { path = "../../libfmlsm", default-features = false }
+
+panic-halt = "^0.2.0"
+riscv-rt = "^0.11.0"
+riscv = "^0.10.1"
+ch32v0 = { version = "^0.1.6", optional = true }
+ch32v1 = { version = "^0.1.6", optional = true }
+
+[features]
+default = ["not-mini", "ch32v003f4p6"]
+
+not-mini = []
+
+ch32v003 = ["ch32v0", "ch32v0/ch32v003"]
+ch32v003f4p6 = ["ch32v003"]  # TSSOP20
+ch32v003j4m6 = ["ch32v003"]  # SOP8
+
+ch32v103 = ["ch32v1", "ch32v1/ch32v103"]
+
+[patch.crates-io]
+# ch32v003
+riscv-rt = { git = "https://github.com/9names/riscv-rt", branch = "rv32e" }
+
+[profile.release]
+opt-level = "s"
+lto = true
+
+[profile.dev]
+opt-level = "s"
+
+[workspace]

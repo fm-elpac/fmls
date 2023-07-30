@@ -1,0 +1,7 @@
+# for ch32v003 (rv32ec)
+
+[build]
+target = "riscv32ec-unknown-none-elf"
+
+[unstable]
+build-std = ["core", "compiler_builtins"]

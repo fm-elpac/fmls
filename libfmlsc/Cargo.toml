@@ -1,0 +1,17 @@
+[package]
+name = "libfmlsc"
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0-or-later"
+
+authors = ["secext2022 <secext2022@outlook.com>"]
+repository = "https://github.com/fm-elpac/fmls"
+description = "common library of FMLS"
+keywords = ["fmls"]
+categories = ["no-std"]
+
+[dependencies]
+crc-catalog = "^2.2.0"
+
+[dev-dependencies]
+crc = "^3.0.1"

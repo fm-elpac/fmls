@@ -1,0 +1,16 @@
+[package]
+name = "libfmlsm"
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0-or-later"
+
+authors = ["secext2022 <secext2022@outlook.com>"]
+repository = "https://github.com/fm-elpac/fmls"
+description = "r2 (MCU) library of FMLS"
+keywords = ["fmls"]
+categories = ["embedded", "no-std", "network-programming"]
+
+[dependencies]
+libfmlsc = { path = "../libfmlsc" }
+
+crc = "^3.0.1"
