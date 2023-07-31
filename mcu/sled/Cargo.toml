@@ -8,13 +8,16 @@ authors = ["secext2022 <secext2022@outlook.com>"]
 repository = "https://github.com/fm-elpac/fmls"
 
 [dependencies]
-libfmlsm = { path = "../../libfmlsm", default-features = false }
-
 panic-halt = "^0.2.0"
 riscv-rt = "^0.11.0"
 riscv = "^0.10.1"
 ch32v0 = { version = "^0.1.6", optional = true }
 ch32v1 = { version = "^0.1.6", optional = true }
+
+[dependencies.libfmlsm]
+path = "../../libfmlsm"
+default-features = false
+features = ["r2c3p-s"]
 
 [features]
 default = ["not-mini", "ch32v003f4p6"]

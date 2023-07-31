@@ -5,7 +5,7 @@ pub use crc_catalog::CRC_16_ARC as CRC_16;
 /// crc32 参数: [`crc_catalog::CRC_32_ISO_HDLC`]
 pub use crc_catalog::CRC_32_ISO_HDLC as CRC_32;
 
-/// fmls_r2c3p 协议版本号
+/// `fmls_r2c3p` 协议版本号
 pub const P_VERSION: &[u8; 16] = b"fmls_r2c3p 0.1.0";
 
 /// 特殊字节 0x0a `\n`
@@ -63,20 +63,20 @@ pub const MSGT_C: u8 = b'C';
 /// 预定义的消息类型 静默消息 `@` 0x40
 pub const MSGT_AT: u8 = b'@';
 
-/// 预定义的错误码 E-1
+/// 预定义的错误码 `E-1`
 pub const E_1: i8 = -1;
 /// 错误码的字节表示形式 (-1), 下同
 pub const EB_1: &[u8; 2] = b"-1";
-/// 预定义的错误码 E-2
+/// 预定义的错误码 `E-2`
 pub const E_2: i8 = -2;
 pub const EB_2: &[u8; 2] = b"-2";
-/// 预定义的错误码 E-3
+/// 预定义的错误码 `E-3`
 pub const E_3: i8 = -3;
 pub const EB_3: &[u8; 2] = b"-3";
-/// 预定义的错误码 E-4
+/// 预定义的错误码 `E-4`
 pub const E_4: i8 = -4;
 pub const EB_4: &[u8; 2] = b"-4";
-/// 预定义的错误码 E-5
+/// 预定义的错误码 `E-5`
 pub const E_5: i8 = -5;
 pub const EB_5: &[u8; 2] = b"-5";
 
