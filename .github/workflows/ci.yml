@@ -117,13 +117,8 @@ jobs:
         tool: cross
 
     # patch code
-    - run: cargo fetch
-    - run: cargo metadata | deno run -A p/openwrt/get_cargo_src.js
-    - run: |
-        mkdir -p patch && \
-        cp -r cargo_src/aws-lc-rs-1.2.1 patch && \
-        cp -r cargo_src/s2n-tls-sys-0.0.29 patch
-    - run: cd patch && patch -p0 < ../p/openwrt/mipsel_patch_1.patch
+    - run: make patch_code
+    - run: patch -p1 < p/openwrt/mipsel_patch_1.patch
 
     # `mipsel-unknown-linux-musl`
     - run: cross build --release --target mipsel-unknown-linux-musl -p fmlsd --no-default-features --features openwrt,quic-s2n
