@@ -8,7 +8,7 @@ authors = ["secext2022 <secext2022@outlook.com>"]
 repository = "https://github.com/fm-elpac/fmls"
 
 [dependencies]
-libfmls = { path = "../libfmls", default-features = false, features = ["quic-quiche"] }
+libfmls = { path = "../libfmls", default-features = false }
 
 log = "^0.4.19"
 env_logger = "^0.10.0"
@@ -21,6 +21,8 @@ built = { version = "^0.6.1" }
 vergen = { version = "^8.2.4", features = ["build", "git", "gitcl"] }
 
 [features]
-default = ["gnu"]
+default = ["gnu", "quic-quiche"]
 
 gnu = ["libfmls/gnu"]
+quic-quiche = ["libfmls/quic-quiche"]
+quic-quinn = ["libfmls/quic-quinn"]

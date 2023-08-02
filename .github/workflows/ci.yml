@@ -71,12 +71,12 @@ jobs:
 
   # release: `aarch64-unknown-linux-gnu` (GNU/Linux)
   build_gnu_aarch64:
-    if: false  # TODO can not build
     needs: build
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
+    # TODO quic-quiche and quic-s2n can not build
     - uses: denoland/setup-deno@v1
       with:
         deno-version: v1.x
@@ -89,9 +89,9 @@ jobs:
     - run: patch -p1 < p/openwrt/mipsel_patch_1.patch
 
     # `aarch64-unknown-linux-gnu`
-    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmlsd --no-default-features --features gnu,quic-s2n
-    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-cli --no-default-features --features gnu,quic-s2n
-    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-r2d --no-default-features --features gnu,quic-s2n
+    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmlsd --no-default-features --features gnu,quic-quinn
+    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-cli --no-default-features --features gnu,quic-quinn
+    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-r2d --no-default-features --features gnu,quic-quinn
 
     # upload
     - run: |
