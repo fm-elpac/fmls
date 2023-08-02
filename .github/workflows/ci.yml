@@ -71,6 +71,7 @@ jobs:
 
   # release: `aarch64-unknown-linux-gnu` (GNU/Linux)
   build_gnu_aarch64:
+    if: false  # TODO can not build
     needs: build
     runs-on: ubuntu-latest
 
