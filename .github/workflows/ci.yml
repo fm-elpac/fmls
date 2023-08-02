@@ -42,9 +42,9 @@ jobs:
     # upload
     - run: |
         tar --zstd -cvf fmls_release_x86_64-unknown-linux-gnu.tar.zst \
-        target/release/fmlsd \
-        target/release/fmls-cli \
-        target/release/fmls-r2d
+        target/x86_64-unknown-linux-gnu/release/fmlsd \
+        target/x86_64-unknown-linux-gnu/release/fmls-cli \
+        target/x86_64-unknown-linux-gnu/release/fmls-r2d
     - uses: actions/upload-artifact@v3
       with:
         name: fmls_release_x86_64-unknown-linux-gnu
@@ -90,6 +90,8 @@ jobs:
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: aarch64-linux-android28-clang
+        AR_aarch64_linux_android: llvm-ar
+        CC_aarch64_linux_android: aarch64-linux-android28-clang
 
     # upload
     - run: |
@@ -107,11 +109,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
-    # install <https://github.com/cargo-bins/cargo-binstall>
-    - run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-    # install <https://github.com/cross-rs/cross>
-    - run: cargo binstall cross
+    - uses: taiki-e/install-action@v2
+      with:
+        tool: cross
 
     # `mipsel-unknown-linux-musl`
     - run: cross build --release --target mipsel-unknown-linux-musl -p fmlsd --no-default-features --features openwrt,quic-s2n
