@@ -1,3 +1,5 @@
 /target
 
 /patch
+/cargo_src
+/deno.lock
