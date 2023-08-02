@@ -26,5 +26,5 @@ strip = true
 lto = true
 
 [patch.crates-io]
-#s2n-tls-sys = { path = "./patch/s2n-tls-sys-0.0.29" }
+#s2n-tls-sys = { path = "./patch/s2n-tls-sys-0.0.34" }
 #aws-lc-rs = { path = "./patch/aws-lc-rs-1.2.1" }

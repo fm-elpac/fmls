@@ -83,7 +83,6 @@ jobs:
 
     # `aarch64-linux-android`
     - run: rustup target add aarch64-linux-android
-
     - run: |
         export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH && \
         cargo build --release --target aarch64-linux-android -p fmlsd --no-default-features --features quic-quiche
