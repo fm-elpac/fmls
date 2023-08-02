@@ -76,22 +76,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    # TODO quic-quiche and quic-s2n can not build
-    - uses: denoland/setup-deno@v1
-      with:
-        deno-version: v1.x
-    - uses: taiki-e/install-action@v2
-      with:
-        tool: cross
-
-    # patch code
-    - run: make patch_code
-    - run: patch -p1 < p/openwrt/mipsel_patch_1.patch
+    - run: sudo apt-get -y install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
     # `aarch64-unknown-linux-gnu`
-    - run: cross build -vv --release --target aarch64-unknown-linux-gnu -p fmlsd --no-default-features --features gnu,quic-quinn
-    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-cli --no-default-features --features gnu,quic-quinn
-    - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-r2d --no-default-features --features gnu,quic-quinn
+    - run: |
+        cargo build --release --target aarch64-unknown-linux-gnu -p fmlsd && \
+        cargo build --release --target aarch64-unknown-linux-gnu -p fmls-cli && \
+        cargo build --release --target aarch64-unknown-linux-gnu -p fmls-r2d
+      env:
+        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+        CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+        CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
 
     # upload
     - run: |

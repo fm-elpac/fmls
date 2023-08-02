@@ -1,8 +1,2 @@
 [target.mipsel-unknown-linux-musl]
 #image = "ghcr.nju.edu.cn/cross-rs/mipsel-unknown-linux-musl:0.2.5"
-
-[target.aarch64-unknown-linux-gnu]
-pre-build = [
-  "dpkg --add-architecture $CROSS_DEB_ARCH",
-  "apt-get update && apt-get install --assume-yes llvm-dev:$CROSS_DEB_ARCH libclang-dev:$CROSS_DEB_ARCH clang:$CROSS_DEB_ARCH libssl-dev:$CROSS_DEB_ARCH"
-]
