@@ -80,6 +80,10 @@ jobs:
       with:
         tool: cross
 
+    # patch code
+    - run: make patch_code
+    - run: patch -p1 < p/openwrt/mipsel_patch_1.patch
+
     # `aarch64-unknown-linux-gnu`
     - run: cross build --release --target aarch64-unknown-linux-gnu -p fmlsd --no-default-features --features gnu,quic-s2n
     - run: cross build --release --target aarch64-unknown-linux-gnu -p fmls-cli --no-default-features --features gnu,quic-s2n
