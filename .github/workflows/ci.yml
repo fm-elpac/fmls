@@ -8,6 +8,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # debug: test
   build:
     runs-on: ubuntu-latest
 
@@ -22,3 +23,110 @@ jobs:
 
     - run: cargo build --verbose
     - run: cargo test --verbose
+    - run: cargo doc
+
+  # release: `x86_64-unknown-linux-gnu` (GNU/Linux)
+  # release: `x86_64-unknown-linux-musl` (OpenWrt)
+  build_gnu:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # `x86_64-unknown-linux-gnu`
+    - run: cargo build --release --target x86_64-unknown-linux-gnu -p fmlsd
+    - run: cargo build --release --target x86_64-unknown-linux-gnu -p fmls-cli
+    - run: cargo build --release --target x86_64-unknown-linux-gnu -p fmls-r2d
+
+    # upload
+    - run: |
+        tar --zstd -cvf fmls_release_x86_64-unknown-linux-gnu.tar.zst \
+        target/release/fmlsd \
+        target/release/fmls-cli \
+        target/release/fmls-r2d
+    - uses: actions/upload-artifact@v3
+      with:
+        name: fmls_release_x86_64-unknown-linux-gnu
+        path: fmls_release_x86_64-unknown-linux-gnu.tar.zst
+
+    # `x86_64-unknown-linux-musl`
+    - run: rustup target add x86_64-unknown-linux-musl
+    - run: |
+        cargo build --release --target x86_64-unknown-linux-musl -p fmlsd --no-default-features --features openwrt,quic-quiche && \
+        cargo build --release --target x86_64-unknown-linux-musl -p fmls-cli --no-default-features --features openwrt,quic-quiche
+      env:
+        CC_x86_64_unknown_linux_musl: gcc
+        CXX: g++
+
+    # upload
+    - run: |
+        tar --zstd -cvf fmls_release_openwrt_x86_64-unknown-linux-musl.tar.zst \
+        target/x86_64-unknown-linux-musl/release/fmlsd \
+        target/x86_64-unknown-linux-musl/release/fmls-cli
+    - uses: actions/upload-artifact@v3
+      with:
+        name: fmls_release_openwrt_x86_64-unknown-linux-musl
+        path: fmls_release_openwrt_x86_64-unknown-linux-musl.tar.zst
+
+  # release: `aarch64-linux-android` (Android)
+  build_android:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r25c
+
+    # `aarch64-linux-android`
+    - run: rustup target add aarch64-linux-android
+
+    - run: |
+        export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH && \
+        cargo build --release --target aarch64-linux-android -p fmlsd --no-default-features --features quic-quiche
+      env:
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: aarch64-linux-android28-clang
+
+    # upload
+    - run: |
+        tar --zstd -cvf fmls_release_aarch64-linux-android.tar.zst \
+        target/aarch64-linux-android/release/fmlsd
+    - uses: actions/upload-artifact@v3
+      with:
+        name: fmls_release_aarch64-linux-android
+        path: fmls_release_aarch64-linux-android.tar.zst
+
+  # release: `mipsel-unknown-linux-musl` (OpenWrt)
+  build_openwrt_mipsel:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # install <https://github.com/cargo-bins/cargo-binstall>
+    - run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+    # install <https://github.com/cross-rs/cross>
+    - run: cargo binstall cross
+
+    # `mipsel-unknown-linux-musl`
+    - run: cross build --release --target mipsel-unknown-linux-musl -p fmlsd --no-default-features --features openwrt,quic-s2n
+    - run: cross build --release --target mipsel-unknown-linux-musl -p fmls-cli --no-default-features --features openwrt,quic-s2n
+
+    # upload
+    - run: |
+        tar --zstd -cvf fmls_release_openwrt_mipsel-unknown-linux-musl.tar.zst \
+        target/mipsel-unknown-linux-musl/release/fmlsd \
+        target/mipsel-unknown-linux-musl/release/fmls-cli
+    - uses: actions/upload-artifact@v3
+      with:
+        name: fmls_release_openwrt_mipsel-unknown-linux-musl
+        path: fmls_release_openwrt_mipsel-unknown-linux-musl.tar.zst
+
+# TODO `aarch64-unknown-linux-gnu` (GNU/Linux)
+# TODO `aarch64-unknown-linux-musl` (OpenWrt)
+# TODO `x86_64-pc-windows-msvc` (Windows)

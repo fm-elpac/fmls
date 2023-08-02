@@ -4,13 +4,15 @@
 
 use core::iter::Iterator;
 
-use libfmlsc::r2c3p::BYTE_LF;
+use libfmlsc::r2c3p::{BYTE_LF, P_VERSION};
+
 #[cfg(feature = "r2c3p-crc32")]
 use libfmlsc::r2c3p::MSGT_V;
 #[cfg(feature = "r2c3p-crc16")]
 use libfmlsc::r2c3p::MSG_LEN_CRC16;
 
 use super::escape_crc::Escape;
+use super::hex::VecSender;
 
 #[cfg(feature = "r2c3p-crc16")]
 use super::escape_crc::Crc16;
@@ -221,7 +223,97 @@ impl<'a, T: Iterator<Item = u8>> Iterator for MsgSender<'a, T> {
     }
 }
 
-// TODO
+#[derive(PartialEq)]
+enum VSenderS {
+    /// 正在发送 p
+    P,
+    /// 正在发送 firmware
+    Firmware,
+    /// 正在发送 hardware
+    Hardware,
+    /// 正在发送 Extra
+    Extra,
+    /// 发送完毕
+    None,
+}
+
+/// 发送 `V` 消息的数据部分
+pub struct VSender<T: Iterator<Item = u8>, U: Iterator<Item = u8>> {
+    s: VSenderS,
+    firmware: &'static [u8],
+    hardware: T,
+    extra: Option<U>,
+    v: VecSender,
+}
+
+impl<T: Iterator<Item = u8>, U: Iterator<Item = u8>> VSender<T, U> {
+    pub fn new(firmware: &'static [u8], hardware: T, extra: Option<U>) -> Self {
+        Self {
+            s: VSenderS::P,
+            firmware,
+            hardware,
+            extra,
+            v: VecSender::new(P_VERSION),
+        }
+    }
+}
+
+impl<T: Iterator<Item = u8>, U: Iterator<Item = u8>> Iterator for VSender<T, U> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        match self.s {
+            VSenderS::P => {
+                match self.v.next() {
+                    Some(b) => Some(b),
+                    None => {
+                        // 更新发送状态
+                        self.v = VecSender::new(self.firmware);
+                        self.s = VSenderS::Firmware;
+                        // 发送分隔字节
+                        Some(BYTE_LF)
+                    }
+                }
+            }
+            VSenderS::Firmware => match self.v.next() {
+                Some(b) => Some(b),
+                None => {
+                    self.s = VSenderS::Hardware;
+                    Some(BYTE_LF)
+                }
+            },
+            VSenderS::Hardware => {
+                match self.hardware.next() {
+                    Some(b) => Some(b),
+                    None => {
+                        if self.extra.is_some() {
+                            self.s = VSenderS::Extra;
+                            Some(BYTE_LF)
+                        } else {
+                            // 发送完毕
+                            self.s = VSenderS::None;
+                            None
+                        }
+                    }
+                }
+            }
+            VSenderS::Extra => {
+                match &mut self.extra {
+                    Some(s) => match s.next() {
+                        Some(b) => Some(b),
+                        None => {
+                            // 发送完毕
+                            self.s = VSenderS::None;
+                            None
+                        }
+                    },
+                    None => None,
+                }
+            }
+            VSenderS::None => None,
+        }
+    }
+}
 
 #[cfg(test)]
 mod test;

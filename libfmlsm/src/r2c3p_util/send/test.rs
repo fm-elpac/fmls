@@ -2,12 +2,13 @@ extern crate std;
 
 use core::iter::Iterator;
 
+use std::string::String;
 use std::string::ToString;
 use std::vec;
 use std::vec::Vec;
 
 use libfmls::r2c3p::{
-    ConfItem, FeedResult, Msg, MsgAt, MsgReq, MsgRes, MsgS, MsgType, R2c3pServer,
+    ConfItem, FeedResult, Msg, MsgAt, MsgReq, MsgRes, MsgS, MsgType, R2c3pServer, P_VERSION,
 };
 
 use super::super::*;
@@ -83,5 +84,49 @@ fn msg_sender() {
             n: 0,
             d: Vec::new()
         }))))]
+    );
+}
+
+#[test]
+fn v_sender() {
+    let mut r = R2c3pServer::new();
+
+    // extra = None
+    let v: VSender<VecSender, NoneSender> =
+        VSender::new(b"sled 0.1.0", VecSender::new(b"ch32v003 666"), None);
+    let mut s = MsgSender::new(b'V', v);
+    let m = recv_msg(&mut s);
+    assert_eq!(
+        r.feed(m),
+        vec![FeedResult::M(Msg::Res(MsgRes::V {
+            p: String::from_utf8_lossy(P_VERSION).into_owned(),
+            firmware: "sled 0.1.0".to_string(),
+            hardware: "ch32v003 666".to_string(),
+            extra: None,
+            raw: Some(Vec::from(
+                b"fmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003 666" as &[u8]
+            ))
+        }))]
+    );
+
+    // extra
+    let v: VSender<VecSender, VecSender> = VSender::new(
+        b"sled 0.1.0",
+        VecSender::new(b"ch32v003 666"),
+        Some(VecSender::new(b"hub\n2")),
+    );
+    let mut s = MsgSender::new(b'V', v);
+    let m = recv_msg(&mut s);
+    assert_eq!(
+        r.feed(m),
+        vec![FeedResult::M(Msg::Res(MsgRes::V {
+            p: String::from_utf8_lossy(P_VERSION).into_owned(),
+            firmware: "sled 0.1.0".to_string(),
+            hardware: "ch32v003 666".to_string(),
+            extra: Some("hub\n2".to_string()),
+            raw: Some(Vec::from(
+                b"fmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003 666\nhub\n2" as &[u8]
+            ))
+        }))]
     );
 }
