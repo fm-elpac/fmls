@@ -58,6 +58,10 @@ pub struct MsgSender<'a, T: Iterator<Item = u8>> {
     c16: Option<Crc16<'a>>,
     #[cfg(feature = "r2c3p-crc32")]
     c32: Option<Crc32<'a>>,
+    // fix compile error for <'a>
+    #[cfg(not(feature = "r2c3p-crc16"))]
+    _a: &'a [u8],
+
     // 发送 crc
     #[cfg(feature = "r2c3p-crc16")]
     c16s: U16LeSender,
@@ -78,6 +82,9 @@ impl<'a, T: Iterator<Item = u8>> MsgSender<'a, T> {
             c16: Some(Crc16::new()),
             #[cfg(feature = "r2c3p-crc32")]
             c32: Some(Crc32::new()),
+            #[cfg(not(feature = "r2c3p-crc16"))]
+            _a: b"",
+
             #[cfg(feature = "r2c3p-crc16")]
             c16s: U16LeSender::new(0),
             #[cfg(feature = "r2c3p-crc32")]

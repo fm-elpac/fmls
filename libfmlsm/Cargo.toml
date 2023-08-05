@@ -24,7 +24,7 @@ default = ["r2c3p-full"]
 # fmls_r2c3p 协议: 启用完整功能
 r2c3p-full = ["r2c3p-s", "r2c3p-at", "r2c3p-o", "r2c3p-v"]
 # "标准" MCU 的配置
-r2c3p-s = ["r2c3p-crc32", "r2c3p-c", "r2c3p-t", "r2c3p-cc", "r2c3p-i"]
+r2c3p-s = ["r2c3p-crc32", "r2c3p-t", "r2c3p-cc", "r2c3p-i"]
 # 启用 crc16
 r2c3p-crc16 = ["crc"]
 # 启用 crc32
@@ -32,14 +32,14 @@ r2c3p-crc32 = ["r2c3p-crc16"]
 # 启用对 `c`, `C` 消息的支持
 r2c3p-c = []
 # 启用对 `@` 消息的支持 (以及 `@`, `@s`N, `@n`N 配置项)
-r2c3p-at = []
+r2c3p-at = ["r2c3p-c"]
 # 启用对 `T`, `t` 配置项的支持
-r2c3p-t = []
+r2c3p-t = ["r2c3p-c"]
 # 启用传输质量监测计数器: `cT`, `cR`, `cRd`, `cTB`, `cRB`
-r2c3p-cc = []
+r2c3p-cc = ["r2c3p-c"]
 # 启用对 `I` 配置项的支持
-r2c3p-i = []
+r2c3p-i = ["r2c3p-c"]
 # 启用对 `O`, `On` 配置项的支持
-r2c3p-o = []
+r2c3p-o = ["r2c3p-c"]
 # 对接收 `V` 消息的支持
 r2c3p-v = []

@@ -25,6 +25,19 @@ jobs:
     - run: cargo test --verbose
     - run: cargo doc
 
+    # 测试 `libfmlsm` 不同的 cargo feature 组合
+    - run: cargo build -p libfmlsm --no-default-features
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-s
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-crc16
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-crc32
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-c
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-at
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-t
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-cc
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-i
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-o
+    - run: cargo build -p libfmlsm --no-default-features --features r2c3p-v
+
   # release: `x86_64-unknown-linux-gnu` (GNU/Linux)
   # release: `x86_64-unknown-linux-musl` (OpenWrt)
   build_gnu:

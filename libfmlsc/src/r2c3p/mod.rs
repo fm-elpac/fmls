@@ -120,5 +120,9 @@ pub const R2C3P_TLSTCP_SD_T: &[u8; 13] = b"r2c3p=tls/tcp";
 /// r2 集线器: 建议开始分配的节点号 (0x31)
 pub const R2_HUB_NID_S: u8 = b'1';
 
+mod util;
+
+pub use util::ConfC;
+
 #[cfg(test)]
 mod test;

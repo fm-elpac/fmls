@@ -11,4 +11,4 @@ pub use error::MsgRecvErr;
 pub use msg::{
     hex, ConfItem, Msg, MsgAt, MsgReq, MsgRes, MsgS, MsgType, MsgTypeReq, MsgTypeRes, MsgTypeS,
 };
-pub use server::{FeedResult, R2c3pServer, TC};
+pub use server::{FeedResult, R2c3pServer};

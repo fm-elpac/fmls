@@ -23,7 +23,7 @@ pub struct Escape {
 }
 
 impl Escape {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { next_byte: None }
     }
 
@@ -63,7 +63,7 @@ pub struct Unescape {
 }
 
 impl Unescape {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { ef: false }
     }
 
@@ -102,8 +102,9 @@ pub struct Crc16<'a> {
     d: Digest<'a, u16>,
 }
 
+#[cfg(feature = "r2c3p-crc16")]
 impl<'a> Crc16<'a> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { d: C16.digest() }
     }
 
@@ -125,8 +126,9 @@ pub struct Crc32<'a> {
     d: Digest<'a, u32>,
 }
 
+#[cfg(feature = "r2c3p-crc32")]
 impl<'a> Crc32<'a> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { d: C32.digest() }
     }
 

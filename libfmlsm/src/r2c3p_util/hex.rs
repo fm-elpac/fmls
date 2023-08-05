@@ -32,7 +32,7 @@ pub struct Fifo2 {
 }
 
 impl Fifo2 {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             b: [0, 0],
             i: Fifo2I::A0,
@@ -91,7 +91,7 @@ pub struct Fifo4 {
 }
 
 impl Fifo4 {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             b: [0, 0, 0, 0],
             i: Fifo4I::A0,
@@ -610,6 +610,155 @@ impl Iterator for NU8Sender {
     }
 }
 
+/// `hex(u8)` 读取 (16 进制)
+///
+/// 如果格式错误, 返回 `None`
+pub fn hex_u8(b: &[u8]) -> Option<u8> {
+    if b.len() != 2 {
+        return None;
+    }
+
+    // 转换一个 hex 字符
+    fn h(x: u8) -> Option<u8> {
+        match x {
+            b'0'..=b'9' => Some(x - b'0'),
+            b'a'..=b'f' => Some(x - b'a' + 10),
+            _ => None,
+        }
+    }
+
+    if let Some(x) = h(b[0]) {
+        if let Some(y) = h(b[1]) {
+            let u = (x << 4) | y;
+            return Some(u);
+        }
+    }
+
+    None
+}
+
+/// 判断长度是否为 2 的倍数
+///
+/// 不为 2 返回 true
+fn len_n2(h: &[u8]) -> bool {
+    // 检查最低位为 0
+    h.len() & 1 != 0
+}
+
+/// `hex(u16)` 读取 (16 进制)
+pub fn hex_u16(h: &[u8]) -> Option<u16> {
+    if len_n2(h) || h.len() < 2 {
+        return None;
+    }
+
+    let mut u: u16 = 0;
+    for i in 0..2 {
+        let end: usize = i * 2 + 2;
+        if end > h.len() {
+            break;
+        }
+        match hex_u8(&h[(i * 2)..end]) {
+            Some(x) => {
+                u = (u << 8) | (x as u16);
+            }
+            None => {
+                return None;
+            }
+        }
+    }
+    Some(u)
+}
+
+/// `hex(u32)` 读取 (16 进制)
+pub fn hex_u32(h: &[u8]) -> Option<u32> {
+    if len_n2(h) || h.len() < 2 {
+        return None;
+    }
+
+    let mut u: u32 = 0;
+    for i in 0..4 {
+        let end: usize = i * 2 + 2;
+        if end > h.len() {
+            break;
+        }
+        match hex_u8(&h[(i * 2)..end]) {
+            Some(x) => {
+                u = (u << 8) | (x as u32);
+            }
+            None => {
+                return None;
+            }
+        }
+    }
+    Some(u)
+}
+
+/// `hex(u64)` 读取 (16 进制)
+pub fn hex_u64(h: &[u8]) -> Option<u64> {
+    if len_n2(h) || h.len() < 2 {
+        return None;
+    }
+
+    let mut u: u64 = 0;
+    for i in 0..8 {
+        let end: usize = i * 2 + 2;
+        if end > h.len() {
+            break;
+        }
+        match hex_u8(&h[(i * 2)..end]) {
+            Some(x) => {
+                u = (u << 8) | (x as u64);
+            }
+            None => {
+                return None;
+            }
+        }
+    }
+    Some(u)
+}
+
+/// n(`u8`) 读取 (10 进制)
+pub fn n_u8(h: &[u8]) -> Option<u8> {
+    // 转换一个 10 进制字符
+    fn d(x: u8) -> Option<u8> {
+        match x {
+            b'0'..=b'9' => Some(x - b'0'),
+            _ => None,
+        }
+    }
+
+    match h.len() {
+        // 1 位数 (0 ~ 9)
+        1 => d(h[0]),
+        // 2 位数 (10 ~ 99)
+        2 => {
+            if let Some(x) = d(h[0]) {
+                if let Some(y) = d(h[1]) {
+                    return Some(x * 10 + y);
+                }
+            }
+            None
+        }
+        // 3 位数 (100 ~ 255)
+        3 => {
+            // 首先转换成 u32
+            if let Some(x) = d(h[0]) {
+                if let Some(y) = d(h[1]) {
+                    if let Some(z) = d(h[2]) {
+                        let u: u32 = ((x as u32) * 100) + ((y as u32) * 10) + (z as u32);
+                        // 最大值 255
+                        if u <= 0xff {
+                            return Some(u as u8);
+                        }
+                    }
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -849,5 +998,79 @@ mod test {
         assert_eq!(s.next(), Some(b'5'));
         assert_eq!(s.next(), None);
         assert_eq!(s.next(), None);
+    }
+
+    #[test]
+    fn test_hex_u8() {
+        assert_eq!(hex_u8(b""), None);
+        assert_eq!(hex_u8(b"0"), None);
+        assert_eq!(hex_u8(b"123"), None);
+        assert_eq!(hex_u8(b"0x"), None);
+
+        assert_eq!(hex_u8(b"00"), Some(0x00));
+        assert_eq!(hex_u8(b"ff"), Some(0xff));
+
+        assert_eq!(hex_u8(b"01"), Some(0x01));
+        assert_eq!(hex_u8(b"23"), Some(0x23));
+        assert_eq!(hex_u8(b"45"), Some(0x45));
+        assert_eq!(hex_u8(b"67"), Some(0x67));
+        assert_eq!(hex_u8(b"89"), Some(0x89));
+        assert_eq!(hex_u8(b"ab"), Some(0xab));
+        assert_eq!(hex_u8(b"cd"), Some(0xcd));
+        assert_eq!(hex_u8(b"ef"), Some(0xef));
+    }
+
+    #[test]
+    fn test_hex_u16() {
+        assert_eq!(hex_u16(b""), None);
+        assert_eq!(hex_u16(b"123"), None);
+
+        assert_eq!(hex_u16(b"0123"), Some(0x123));
+        assert_eq!(hex_u16(b"4567"), Some(0x4567));
+        assert_eq!(hex_u16(b"89ab"), Some(0x89ab));
+        assert_eq!(hex_u16(b"cdef"), Some(0xcdef));
+    }
+
+    #[test]
+    fn test_hex_u32() {
+        assert_eq!(hex_u32(b""), None);
+        assert_eq!(hex_u32(b"123"), None);
+
+        assert_eq!(hex_u32(b"01234567"), Some(0x1234567));
+        assert_eq!(hex_u32(b"89abcdef"), Some(0x89abcdef));
+    }
+
+    #[test]
+    fn test_hex_u64() {
+        assert_eq!(hex_u64(b""), None);
+        assert_eq!(hex_u64(b"123"), None);
+
+        assert_eq!(hex_u64(b"123456789abcdef0"), Some(0x123456789abcdef0));
+    }
+
+    #[test]
+    fn test_n_u8() {
+        assert_eq!(n_u8(b""), None);
+        assert_eq!(n_u8(b"x"), None);
+
+        assert_eq!(n_u8(b"0"), Some(0));
+        assert_eq!(n_u8(b"1"), Some(1));
+        assert_eq!(n_u8(b"2"), Some(2));
+        assert_eq!(n_u8(b"9"), Some(9));
+        assert_eq!(n_u8(b"10"), Some(10));
+        assert_eq!(n_u8(b"11"), Some(11));
+        assert_eq!(n_u8(b"90"), Some(90));
+        assert_eq!(n_u8(b"99"), Some(99));
+        assert_eq!(n_u8(b"100"), Some(100));
+        assert_eq!(n_u8(b"101"), Some(101));
+        assert_eq!(n_u8(b"123"), Some(123));
+        assert_eq!(n_u8(b"199"), Some(199));
+        assert_eq!(n_u8(b"200"), Some(200));
+        assert_eq!(n_u8(b"222"), Some(222));
+        assert_eq!(n_u8(b"254"), Some(254));
+        assert_eq!(n_u8(b"255"), Some(255));
+        assert_eq!(n_u8(b"256"), None);
+        assert_eq!(n_u8(b"257"), None);
+        assert_eq!(n_u8(b"1000"), None);
     }
 }
