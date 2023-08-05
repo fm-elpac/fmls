@@ -4,7 +4,7 @@
 
 use core::iter::Iterator;
 
-use libfmlsc::r2c3p::{BYTE_LF, P_VERSION};
+use libfmlsc::r2c3p::{BYTE_EQ, BYTE_LF, BYTE_SPACE, P_VERSION};
 
 #[cfg(feature = "r2c3p-crc32")]
 use libfmlsc::r2c3p::MSGT_V;
@@ -270,18 +270,16 @@ impl<T: Iterator<Item = u8>, U: Iterator<Item = u8>> Iterator for VSender<T, U> 
 
     fn next(&mut self) -> Option<u8> {
         match self.s {
-            VSenderS::P => {
-                match self.v.next() {
-                    Some(b) => Some(b),
-                    None => {
-                        // 更新发送状态
-                        self.v = VecSender::new(self.firmware);
-                        self.s = VSenderS::Firmware;
-                        // 发送分隔字节
-                        Some(BYTE_LF)
-                    }
+            VSenderS::P => match self.v.next() {
+                Some(b) => Some(b),
+                None => {
+                    // 更新发送状态
+                    self.v = VecSender::new(self.firmware);
+                    self.s = VSenderS::Firmware;
+                    // 发送分隔字节
+                    Some(BYTE_LF)
                 }
-            }
+            },
             VSenderS::Firmware => match self.v.next() {
                 Some(b) => Some(b),
                 None => {
@@ -289,35 +287,149 @@ impl<T: Iterator<Item = u8>, U: Iterator<Item = u8>> Iterator for VSender<T, U> 
                     Some(BYTE_LF)
                 }
             },
-            VSenderS::Hardware => {
-                match self.hardware.next() {
-                    Some(b) => Some(b),
-                    None => {
-                        if self.extra.is_some() {
-                            self.s = VSenderS::Extra;
-                            Some(BYTE_LF)
-                        } else {
-                            // 发送完毕
-                            self.s = VSenderS::None;
-                            None
-                        }
+            VSenderS::Hardware => match self.hardware.next() {
+                Some(b) => Some(b),
+                None => {
+                    if self.extra.is_some() {
+                        self.s = VSenderS::Extra;
+                        Some(BYTE_LF)
+                    } else {
+                        // 发送完毕
+                        self.s = VSenderS::None;
+                        None
                     }
                 }
-            }
-            VSenderS::Extra => {
-                match &mut self.extra {
-                    Some(s) => match s.next() {
-                        Some(b) => Some(b),
-                        None => {
-                            // 发送完毕
-                            self.s = VSenderS::None;
-                            None
-                        }
-                    },
-                    None => None,
-                }
-            }
+            },
+            VSenderS::Extra => match &mut self.extra {
+                Some(s) => match s.next() {
+                    Some(b) => Some(b),
+                    None => {
+                        // 发送完毕
+                        self.s = VSenderS::None;
+                        None
+                    }
+                },
+                None => None,
+            },
             VSenderS::None => None,
+        }
+    }
+}
+
+#[derive(PartialEq)]
+enum ESenderS {
+    /// 正在发送错误码
+    C,
+    /// 正在发送错误信息
+    M,
+    /// 发送完毕
+    None,
+}
+
+/// 发送 `E` 消息的数据部分
+pub struct ESender<T: Iterator<Item = u8>, U: Iterator<Item = u8>> {
+    s: ESenderS,
+    /// 错误码发送器
+    c: T,
+    /// 错误信息发送器
+    m: Option<U>,
+}
+
+impl<T: Iterator<Item = u8>, U: Iterator<Item = u8>> ESender<T, U> {
+    pub fn new(c: T, m: Option<U>) -> Self {
+        Self {
+            s: ESenderS::C,
+            c,
+            m,
+        }
+    }
+}
+
+impl<T: Iterator<Item = u8>, U: Iterator<Item = u8>> Iterator for ESender<T, U> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        match self.s {
+            ESenderS::C => match self.c.next() {
+                Some(b) => Some(b),
+                None => {
+                    if self.m.is_some() {
+                        self.s = ESenderS::M;
+                        // 发送空格字符
+                        Some(BYTE_SPACE)
+                    } else {
+                        // 发送完毕
+                        self.s = ESenderS::None;
+                        None
+                    }
+                }
+            },
+            ESenderS::M => match &mut self.m {
+                Some(m) => match m.next() {
+                    Some(b) => Some(b),
+                    None => {
+                        self.s = ESenderS::None;
+                        None
+                    }
+                },
+                None => {
+                    self.s = ESenderS::None;
+                    None
+                }
+            },
+            ESenderS::None => None,
+        }
+    }
+}
+
+#[derive(PartialEq)]
+enum CSenderS {
+    /// 正在发送 K
+    K,
+    /// 正在发送 V
+    V,
+    /// 发送完毕
+    None,
+}
+
+/// 发送 `C` 消息的数据部分
+pub struct CSender<T: Iterator<Item = u8>> {
+    s: CSenderS,
+    k: VecSender,
+    v: T,
+}
+
+impl<T: Iterator<Item = u8>> CSender<T> {
+    pub fn new(k: &'static [u8], v: T) -> Self {
+        Self {
+            s: CSenderS::K,
+            k: VecSender::new(k),
+            v,
+        }
+    }
+}
+
+impl<T: Iterator<Item = u8>> Iterator for CSender<T> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        match self.s {
+            CSenderS::K => match self.k.next() {
+                Some(b) => Some(b),
+                None => {
+                    self.s = CSenderS::V;
+                    // 发送等号
+                    Some(BYTE_EQ)
+                }
+            },
+            CSenderS::V => match self.v.next() {
+                Some(b) => Some(b),
+                None => {
+                    self.s = CSenderS::None;
+                    None
+                }
+            },
+            CSenderS::None => None,
         }
     }
 }

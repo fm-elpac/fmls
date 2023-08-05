@@ -1,5 +1,9 @@
 //! 消息的附加数据读取
 
+use libfmlsc::r2c3p as p;
+
+use super::hex::{index_of, n_u8};
+
 #[cfg(feature = "r2c3p-c")]
 mod conf;
 
@@ -9,12 +13,12 @@ pub use conf::{read_conf_k, read_conf_v, ConfK, ConfV};
 /// 消息的附加数据的类型
 #[derive(Debug, Clone, PartialEq)]
 pub enum Body<'a> {
-    /// 不支持 / 未知 / 无数据
+    /// 不支持 / 未知 / 无数据 / 格式错误
     None,
     /// `E`
     E {
         /// 错误码
-        c: i8,
+        c: i16,
         /// 错误信息
         m: Option<&'a [u8]>,
     },
@@ -29,7 +33,49 @@ pub enum Body<'a> {
     // TODO `V`
 }
 
-// TODO
+/// 读取附加数据
+pub fn read_body<'a>(t: u8, b: &'a [u8]) -> Body<'a> {
+    match t {
+        // `E`
+        p::MSGT_E => {
+            // 寻找 ` ` 字符
+            let (cb, m) = match index_of(b, p::BYTE_SPACE) {
+                Some(i) => (&b[..i], Some(&b[(i + 1)..])),
+                None => (&b[..], None),
+            };
+            // 错误码 < 0
+            let c = if (cb.len() > 1) && (cb[0] == b'-') {
+                match n_u8(&cb[1..]) {
+                    Some(i) => Some(-(i as i16)),
+                    None => None,
+                }
+            } else {
+                match n_u8(cb) {
+                    Some(i) => Some(i as i16),
+                    None => None,
+                }
+            };
+            if let Some(c) = c {
+                return Body::E { c, m };
+            }
+        }
+        // `c`, `C`
+        #[cfg(feature = "r2c3p-c")]
+        p::MSGT_C_R | p::MSGT_C => {
+            // 寻找 `=` 字符
+            let (k, v) = match index_of(b, p::BYTE_EQ) {
+                Some(i) => (&b[..i], Some(&b[(i + 1)..])),
+                None => (&b[..], None),
+            };
+            return Body::C { k, v };
+        }
+        _ => {}
+    }
+    // TODO `V`
+
+    // 不支持 / 未知
+    Body::None
+}
 
 #[cfg(test)]
 mod test;

@@ -146,7 +146,7 @@ impl<'a> Crc32<'a> {
 
 /// 根据数据长度选择 crc 类型
 /// 如果出错返回 None
-#[cfg(feature = "r2c3p-crc32")]
+#[cfg(feature = "r2c3p-crc16")]
 pub fn crc_len(len: usize, use_crc32: bool) -> Option<usize> {
     let u32b = core::mem::size_of::<u32>();
     if use_crc32 || len > (MSG_LEN_CRC16 as usize + u32b) {
