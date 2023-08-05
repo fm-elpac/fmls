@@ -48,7 +48,7 @@ pub struct R2c3pPort<'a> {
     s: R2c3pPortS,
     // 消息类型
     t: Option<u8>,
-    // 附加数据原始接收长度 (不经过 crc 缓冲)
+    // 原始接收的一条消息的总长度 (含消息类型+crc)
     r_len: usize,
     // 消息附加数据长度 (可能经过 crc 缓冲)
     m_len: usize,
@@ -232,12 +232,13 @@ impl<'a> R2c3pPort<'a> {
                 self.s = R2c3pPortS::Data;
 
                 self.crc_feed(b);
+                self.r_len += 1;
                 // 消息类型字节不放入缓冲区
                 None
             }
             R2c3pPortS::Data => {
                 // 处理 `vv` 消息
-                if (Some(p::MSGT_V_R) == self.t) && (0 == self.r_len) && (b'v' == b) {
+                if (Some(p::MSGT_V_R) == self.t) && (1 == self.r_len) && (b'v' == b) {
                     self.vv = true;
                 } else {
                     self.vv = false;
@@ -245,18 +246,23 @@ impl<'a> R2c3pPort<'a> {
 
                 let o = self.crc_feed(b);
                 self.r_len += 1;
-                if o.is_some() {
+                // 忽略吐出的第一个字节 (消息类型)
+                if o.is_some() && (self.r_len > 3) {
                     self.m_len += 1;
                 }
 
                 // 检查消息长度
-                if self.m_len >= self.b_len {
+                if self.m_len > (self.b_len + 2) {
                     // 错误: 消息太长
                     self.e_2 = true;
                     return None;
                 }
                 // 这个字节应该放入缓冲区
-                o
+                if self.r_len > 3 {
+                    o
+                } else {
+                    None
+                }
             }
             R2c3pPortS::Err => {
                 // unreachable!()
@@ -385,6 +391,10 @@ impl<'a> R2c3pPort<'a> {
 
         // 检查 crc 通过
         self.s = R2c3pPortS::Ok;
+        // 检查消息太长
+        if self.m_len > self.b_len {
+            self.e_2 = true;
+        }
         // 成功接收了一条消息
         self.c_r();
         self.c_rb(self.m_len as u32);
