@@ -1,4 +1,4 @@
-//! 通用初始化代码
+//! 系统初始化
 
 use crate::P;
 
@@ -17,25 +17,21 @@ pub fn init_stk(p: &P) {
 }
 
 /// 启用 GPIOA
-#[allow(dead_code)]
 pub fn init_gpioa(p: &P) {
     p.RCC.apb2pcenr.modify(|_, w| w.iopaen().set_bit());
 }
 
 /// 启用 GPIOC
-#[allow(dead_code)]
 pub fn init_gpioc(p: &P) {
     p.RCC.apb2pcenr.modify(|_, w| w.iopcen().set_bit());
 }
 
 /// 启用 GPIOD
-#[allow(dead_code)]
 pub fn init_gpiod(p: &P) {
     p.RCC.apb2pcenr.modify(|_, w| w.iopden().set_bit());
 }
 
 /// 启用 UART1
-#[allow(dead_code)]
 pub fn init_uart1(p: &P) {
     p.RCC.apb2pcenr.modify(|_, w| w.usart1en().set_bit());
 

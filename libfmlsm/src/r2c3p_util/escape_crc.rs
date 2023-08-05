@@ -98,12 +98,12 @@ const C32: Crc<u32> = Crc::<u32>::new(&CRC_32);
 
 /// 计算 crc16
 #[cfg(feature = "r2c3p-crc16")]
-pub struct Crc16<'a> {
-    d: Digest<'a, u16>,
+pub struct Crc16 {
+    d: Digest<'static, u16>,
 }
 
 #[cfg(feature = "r2c3p-crc16")]
-impl<'a> Crc16<'a> {
+impl Crc16 {
     pub const fn new() -> Self {
         Self { d: C16.digest() }
     }
@@ -122,12 +122,12 @@ impl<'a> Crc16<'a> {
 
 /// 计算 crc32
 #[cfg(feature = "r2c3p-crc32")]
-pub struct Crc32<'a> {
-    d: Digest<'a, u32>,
+pub struct Crc32 {
+    d: Digest<'static, u32>,
 }
 
 #[cfg(feature = "r2c3p-crc32")]
-impl<'a> Crc32<'a> {
+impl Crc32 {
     pub const fn new() -> Self {
         Self { d: C32.digest() }
     }

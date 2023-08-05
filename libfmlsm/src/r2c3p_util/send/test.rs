@@ -17,7 +17,7 @@ use super::*;
 // 使用 `libfmls::r2c3p` 来测试
 // 在简化测试的同时, 也测试了与 `libfmls` 实现的一致性
 
-fn recv_msg<'a, T: Iterator<Item = u8>>(s: &mut MsgSender<'a, T>) -> Vec<u8> {
+fn recv_msg<T: Iterator<Item = u8>>(s: &mut MsgSender<T>) -> Vec<u8> {
     let mut o: Vec<u8> = Vec::new();
     while !s.done() {
         match s.next() {

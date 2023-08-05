@@ -7,7 +7,7 @@ use libfmls::r2c3p::{Msg, MsgType, R2c3pServer};
 use super::*;
 
 // 给接收端喂入字节
-fn feed_port<'a, T: R2c3pPortT<'a>>(p: &mut T, b: &[u8]) {
+fn feed_port<T: R2c3pPortT>(p: &mut T, b: &[u8]) {
     for i in b {
         p.feed(*i);
     }

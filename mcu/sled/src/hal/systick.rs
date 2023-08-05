@@ -1,4 +1,4 @@
-//! 系统时基计数器 (systick) 相关代码
+//! 系统时基定时器
 
 use crate::P;
 
@@ -13,23 +13,6 @@ pub fn read_stk_1(p: &P) -> bool {
     let t: u32 = 0x400;
 
     read_stk(p) & t != 0
-}
-
-/// 等待约 1ms (不精确), 基于 systick
-fn wait_stk_1(p: &P) {
-    // 等待计数器比特翻转
-    if read_stk_1(p) {
-        while read_stk_1(p) {}
-    } else {
-        while !read_stk_1(p) {}
-    }
-}
-
-/// 等待 (阻塞), 基于 systick
-pub fn wait_stk(p: &P, t: u32) {
-    for _ in 0..t {
-        wait_stk_1(p);
-    }
 }
 
 /// 基于 systick 的定时器, 非阻塞

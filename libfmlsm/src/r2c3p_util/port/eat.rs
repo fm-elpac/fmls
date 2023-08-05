@@ -8,28 +8,28 @@ use super::super::hex::{
 use super::super::send::{CSender, ESender, MsgSender};
 
 /// 需要发送的响应消息 (发送器)
-pub enum Eat<'a> {
+pub enum Eat {
     /// 比如 `E-2 32`
-    E2(MsgSender<'a, ESender<VecSender, NU8Sender>>),
+    E2(MsgSender<ESender<VecSender, NU8Sender>>),
     /// 比如 `E-3 c`
-    E3(MsgSender<'a, ESender<VecSender, U8Sender>>),
+    E3(MsgSender<ESender<VecSender, U8Sender>>),
     /// 比如 `E-4`, `E-5`
-    E(MsgSender<'a, ESender<VecSender, NoneSender>>),
+    E(MsgSender<ESender<VecSender, NoneSender>>),
     /// 比如 `CcT=`
     #[cfg(any(feature = "r2c3p-at", feature = "r2c3p-cc"))]
-    CHexU32(MsgSender<'a, CSender<HexU32Sender>>),
+    CHexU32(MsgSender<CSender<HexU32Sender>>),
     /// 比如 `CI=`
     #[cfg(feature = "r2c3p-i")]
-    CHexU64(MsgSender<'a, CSender<HexU64Sender>>),
+    CHexU64(MsgSender<CSender<HexU64Sender>>),
     /// 比如 `CO=`
     #[cfg(feature = "r2c3p-o")]
-    CHexU8(MsgSender<'a, CSender<HexU8Sender>>),
+    CHexU8(MsgSender<CSender<HexU8Sender>>),
     /// 比如 `C@=1`
     #[cfg(feature = "r2c3p-at")]
-    CN8(MsgSender<'a, CSender<NU8Sender>>),
+    CN8(MsgSender<CSender<NU8Sender>>),
 }
 
-impl<'a> Eat<'a> {
+impl Eat {
     pub fn done(&self) -> bool {
         match self {
             Eat::E2(m) => m.done(),
@@ -47,7 +47,7 @@ impl<'a> Eat<'a> {
     }
 }
 
-impl<'a> Iterator for Eat<'a> {
+impl Iterator for Eat {
     type Item = u8;
 
     fn next(&mut self) -> Option<u8> {

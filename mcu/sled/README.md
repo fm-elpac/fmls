@@ -25,6 +25,13 @@ TODO
 
 UART 波特率: 9600
 
+r2c3p 测试:
+
+```
+vv
+Vfmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003f4p6 aa84abcd129abc49ffffffff
+```
+
 引脚使用: (ch32v003f4p6 TSSOP20)
 
 | 编号 | 名称       | 说明                             |

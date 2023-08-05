@@ -1,6 +1,6 @@
-//! LED 闪烁功能
+//! LED 闪烁
 
-use crate::util::{read_stk_1, StkTimer, UartEcho};
+use super::{read_stk_1, StkTimer};
 use crate::P;
 
 /// 点亮 LED (闪烁)
@@ -57,7 +57,8 @@ impl Led {
         }
     }
 
-    pub fn one_loop(&mut self, p: &P, u: Option<&mut UartEcho>) {
+    pub fn one_loop(&mut self, p: &P) -> bool {
+        let mut on = false;
         if self.s {
             if self.t.check(read_stk_1(p), self.t_1) {
                 led_off(p);
@@ -67,12 +68,10 @@ impl Led {
             if self.t.check(read_stk_1(p), self.t_0) {
                 led_on(p);
                 self.s = true;
-
-                // 每次亮的时候, 通过 UART 输出一个 '.' 字符
-                if let Some(u) = u {
-                    u.set_r(Some(b'.'));
-                }
+                // 指示点亮
+                on = true;
             }
         }
+        on
     }
 }

@@ -2,15 +2,11 @@
 
 use ch32v0::ch32v003::Peripherals as P;
 
-use crate::led::{led_off, Led};
-use crate::sys_init::{init_gpioc, init_gpiod, init_stk, init_uart1};
+use crate::hal::{init_gpioc, init_gpiod, init_stk, init_uart1, led_off};
+use crate::r2c3p_c::R2c3pClient;
 
 #[cfg(feature = "ch32v003j4m6")]
-use crate::sys_init::init_gpioa;
-
-mod uart;
-
-use uart::Uart;
+use crate::hal::init_gpioa;
 
 pub fn init(p: &P) {
     init_stk(p);
@@ -89,21 +85,18 @@ pub fn init(p: &P) {
 
 /// 存储全局状态信息
 pub struct G {
-    led: Led,
-    uart: Uart,
+    c: R2c3pClient,
 }
 
 impl G {
     // 默认值
     pub const fn default() -> Self {
         Self {
-            led: Led::default(),
-            uart: Uart::default(),
+            c: R2c3pClient::default(),
         }
     }
 
     pub fn one_loop(&mut self, p: &P) {
-        self.uart.one_loop(p, &mut self.led);
-        self.led.one_loop(p, Some(&mut self.uart.e));
+        self.c.one_loop(p);
     }
 }

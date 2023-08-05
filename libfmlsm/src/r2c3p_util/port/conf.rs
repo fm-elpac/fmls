@@ -53,16 +53,16 @@ impl ConfData {
     }
 
     /// 处理 `c` 消息
-    pub fn eat_c<'a>(&mut self, body: &'a [u8]) -> Option<Eat<'a>> {
+    pub fn eat_c(&mut self, body: &[u8]) -> Option<Eat> {
         // 生成 `E-4` 错误
-        fn e4<'a>() -> Option<Eat<'a>> {
+        fn e4() -> Option<Eat> {
             Some(Eat::E(MsgSender::new(
                 p::MSGT_E,
                 ESender::new(VecSender::new(p::EB_4), None),
             )))
         }
         // 生成 `E-5` 错误
-        fn e5<'a>() -> Option<Eat<'a>> {
+        fn e5() -> Option<Eat> {
             Some(Eat::E(MsgSender::new(
                 p::MSGT_E,
                 ESender::new(VecSender::new(p::EB_5), None),
@@ -70,28 +70,28 @@ impl ConfData {
         }
         // 生成 `C` 消息
         #[cfg(feature = "r2c3p-at")]
-        fn c_n8<'a>(c: &'static [u8], u: u8) -> Option<Eat<'a>> {
+        fn c_n8(c: &'static [u8], u: u8) -> Option<Eat> {
             Some(Eat::CN8(MsgSender::new(
                 p::MSGT_C,
                 CSender::new(c, NU8Sender::new(u)),
             )))
         }
         #[cfg(feature = "r2c3p-cc")]
-        fn c_hex_u32<'a>(c: &'static [u8], u: u32) -> Option<Eat<'a>> {
+        fn c_hex_u32(c: &'static [u8], u: u32) -> Option<Eat> {
             Some(Eat::CHexU32(MsgSender::new(
                 p::MSGT_C,
                 CSender::new(c, HexU32Sender::new(u)),
             )))
         }
         #[cfg(feature = "r2c3p-i")]
-        fn c_hex_u64<'a>(c: &'static [u8], u: u64) -> Option<Eat<'a>> {
+        fn c_hex_u64(c: &'static [u8], u: u64) -> Option<Eat> {
             Some(Eat::CHexU64(MsgSender::new(
                 p::MSGT_C,
                 CSender::new(c, HexU64Sender::new(u)),
             )))
         }
         #[cfg(feature = "r2c3p-o")]
-        fn c_hex_u8<'a>(c: &'static [u8], u: u8) -> Option<Eat<'a>> {
+        fn c_hex_u8(c: &'static [u8], u: u8) -> Option<Eat> {
             Some(Eat::CHexU8(MsgSender::new(
                 p::MSGT_C,
                 CSender::new(c, HexU8Sender::new(u)),
@@ -107,7 +107,7 @@ impl ConfData {
                     ConfK::CT => match v {
                         Some(_) => {
                             // 不支持设置值
-                            e5::<'a>()
+                            e5()
                         }
                         None => {
                             // 返回计数器的值
@@ -116,22 +116,22 @@ impl ConfData {
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CR => match v {
-                        Some(_) => e5::<'a>(),
+                        Some(_) => e5(),
                         None => c_hex_u32(p::CONF_CR, self.tc.r),
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CRd => match v {
-                        Some(_) => e5::<'a>(),
+                        Some(_) => e5(),
                         None => c_hex_u32(p::CONF_CRD, self.tc.rd),
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CTB => match v {
-                        Some(_) => e5::<'a>(),
+                        Some(_) => e5(),
                         None => c_hex_u32(p::CONF_CTB, self.tc.tb),
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CRB => match v {
-                        Some(_) => e5::<'a>(),
+                        Some(_) => e5(),
                         None => c_hex_u32(p::CONF_CRB, self.tc.rb),
                     },
                     #[cfg(feature = "r2c3p-i")]
@@ -145,7 +145,7 @@ impl ConfData {
                             }
                             None => {
                                 // 消息解析错误
-                                e4::<'a>()
+                                e4()
                             }
                         },
                         None => c_hex_u64(p::CONF_I, self.i),
@@ -157,7 +157,7 @@ impl ConfData {
                                 self.o = u;
                                 c_hex_u8(p::CONF_O, self.o)
                             }
-                            None => e4::<'a>(),
+                            None => e4(),
                         },
                         None => c_hex_u8(p::CONF_O, self.o),
                     },
@@ -168,25 +168,25 @@ impl ConfData {
                                 self.on = u;
                                 c_hex_u8(p::CONF_ON, self.on)
                             }
-                            None => e4::<'a>(),
+                            None => e4(),
                         },
                         None => c_hex_u8(p::CONF_ON, self.on),
                     },
                     #[cfg(feature = "r2c3p-at")]
                     ConfK::At => {
                         // 返回 `c@=0`
-                        c_n8::<'a>(p::CONF_AT, self.at)
+                        c_n8(p::CONF_AT, self.at)
                     }
 
                     _ => {
                         // 不支持的配置项
-                        e5::<'a>()
+                        e5()
                     }
                 }
             }
             _ => {
                 // 消息附加数据格式错误, 返回 `E-4` 错误
-                e4::<'a>()
+                e4()
             }
         }
     }

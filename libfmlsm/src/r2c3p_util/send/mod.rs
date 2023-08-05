@@ -42,7 +42,7 @@ enum MsgSenderS {
 /// 发送一条消息的封装
 ///
 /// 一次发送一个字节
-pub struct MsgSender<'a, T: Iterator<Item = u8>> {
+pub struct MsgSender<T: Iterator<Item = u8>> {
     s: MsgSenderS,
     // 消息类型
     t: u8,
@@ -55,12 +55,9 @@ pub struct MsgSender<'a, T: Iterator<Item = u8>> {
     len: usize,
     // 计算 crc
     #[cfg(feature = "r2c3p-crc16")]
-    c16: Option<Crc16<'a>>,
+    c16: Option<Crc16>,
     #[cfg(feature = "r2c3p-crc32")]
-    c32: Option<Crc32<'a>>,
-    // fix compile error for <'a>
-    #[cfg(not(feature = "r2c3p-crc16"))]
-    _a: &'a [u8],
+    c32: Option<Crc32>,
 
     // 发送 crc
     #[cfg(feature = "r2c3p-crc16")]
@@ -69,7 +66,7 @@ pub struct MsgSender<'a, T: Iterator<Item = u8>> {
     c32s: U32LeSender,
 }
 
-impl<'a, T: Iterator<Item = u8>> MsgSender<'a, T> {
+impl<T: Iterator<Item = u8>> MsgSender<T> {
     pub fn new(t: u8, i: T) -> Self {
         Self {
             s: MsgSenderS::Head,
@@ -82,8 +79,6 @@ impl<'a, T: Iterator<Item = u8>> MsgSender<'a, T> {
             c16: Some(Crc16::new()),
             #[cfg(feature = "r2c3p-crc32")]
             c32: Some(Crc32::new()),
-            #[cfg(not(feature = "r2c3p-crc16"))]
-            _a: b"",
 
             #[cfg(feature = "r2c3p-crc16")]
             c16s: U16LeSender::new(0),
@@ -164,7 +159,7 @@ impl<'a, T: Iterator<Item = u8>> MsgSender<'a, T> {
     }
 }
 
-impl<'a, T: Iterator<Item = u8>> Iterator for MsgSender<'a, T> {
+impl<T: Iterator<Item = u8>> Iterator for MsgSender<T> {
     type Item = u8;
 
     /// 当返回 `None` 时, 不一定发送完毕, 需要检查 `.done()`

@@ -16,13 +16,21 @@ ch32v1 = { version = "^0.1.6", optional = true }
 
 [dependencies.libfmlsm]
 path = "../../libfmlsm"
+optional = true
 default-features = false
-features = ["r2c3p-s"]
+features = ["r2c3p-crc16", "r2c3p-t"]
 
 [features]
 default = ["not-mini", "ch32v003f4p6"]
 
-not-mini = []
+# 启用 fmls_r2c3p 功能
+r2c3p = ["libfmlsm"]
+r2c3p-i = ["r2c3p", "libfmlsm/r2c3p-i"]
+r2c3p-cc = ["r2c3p", "libfmlsm/r2c3p-cc"]
+r2c3p-s = ["r2c3p", "libfmlsm/r2c3p-s"]
+r2c3p-full = ["r2c3p", "libfmlsm/r2c3p-full"]
+
+not-mini = ["r2c3p", "libfmlsm/r2c3p-crc32"]
 
 ch32v003 = ["ch32v0", "ch32v0/ch32v003"]
 ch32v003f4p6 = ["ch32v003"]  # TSSOP20

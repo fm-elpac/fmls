@@ -40,7 +40,7 @@ enum R2c3pPortS {
 /// `fmls_r2c3p` 协议的一个连接 (UART)
 ///
 /// 通用功能 (不含内部接收缓冲区)
-pub struct R2c3pPort<'a> {
+pub struct R2c3pPort {
     // 接收缓冲区的长度
     b_len: usize,
 
@@ -70,19 +70,16 @@ pub struct R2c3pPort<'a> {
     f4: Fifo4,
     // 计算 crc
     #[cfg(feature = "r2c3p-crc16")]
-    c16: Option<Crc16<'a>>,
+    c16: Option<Crc16>,
     #[cfg(feature = "r2c3p-crc32")]
-    c32: Option<Crc32<'a>>,
-    // fix compile error for <'a>
-    #[cfg(not(feature = "r2c3p-crc16"))]
-    _a: &'a [u8],
+    c32: Option<Crc32>,
 
     /// 预定义的配置项数据
     #[cfg(feature = "r2c3p-c")]
     conf: ConfData,
 }
 
-impl<'a> R2c3pPort<'a> {
+impl R2c3pPort {
     /// `b_len`: 接收缓冲区的长度
     pub const fn new(b_len: usize) -> Self {
         Self {
@@ -103,8 +100,6 @@ impl<'a> R2c3pPort<'a> {
             c16: Some(Crc16::new()),
             #[cfg(feature = "r2c3p-crc32")]
             c32: Some(Crc32::new()),
-            #[cfg(not(feature = "r2c3p-crc16"))]
-            _a: b"",
 
             #[cfg(feature = "r2c3p-c")]
             conf: ConfData::new(),
@@ -427,7 +422,7 @@ impl<'a> R2c3pPort<'a> {
     /// 如果应用已经自己处理了接收的消息, 不应该调用此方法.
     ///
     /// 返回需要发送的响应消息 (发送器)
-    pub fn eat(&mut self, body: &'a [u8]) -> Option<Eat<'a>> {
+    pub fn eat(&mut self, body: &[u8]) -> Option<Eat> {
         // 检查是否成功接收消息
         let t = match self.get_t() {
             Some(t) => t,
@@ -484,10 +479,10 @@ impl<'a> R2c3pPort<'a> {
 }
 
 /// `R2c3pPort*` 的统一接口
-pub trait R2c3pPortT<'a> {
+pub trait R2c3pPortT {
     /// 返回内部包装的 `R2c3pPort`
     fn get_p(&self) -> &R2c3pPort;
-    fn get_p_mut(&mut self) -> &mut R2c3pPort<'a>;
+    fn get_p_mut(&mut self) -> &mut R2c3pPort;
 
     /// 获取消息类型
     ///
@@ -536,7 +531,7 @@ pub trait R2c3pPortT<'a> {
     fn feed(&mut self, u: u8);
 
     /// 读取全部消息附加数据
-    fn get_body(&'a self) -> &'a [u8];
+    fn get_body(&self) -> &[u8];
 
     /// 对消息的默认处理
     ///
@@ -546,19 +541,19 @@ pub trait R2c3pPortT<'a> {
     /// 如果应用已经自己处理了接收的消息, 不应该调用此方法.
     ///
     /// 返回需要发送的响应消息 (发送器)
-    fn eat(&'a mut self) -> Option<Eat<'a>>;
+    fn eat(&mut self) -> Option<Eat>;
 }
 
 /// 含有 8 字节 (协议允许的最小值) 接收缓冲区
 ///
 /// 能接收长度不超过 8 字节 (不含 CRC, 转义) 的消息
-pub struct R2c3pPort8<'a> {
-    p: R2c3pPort<'a>,
+pub struct R2c3pPort8 {
+    p: R2c3pPort,
     // 内部缓冲区
     b: [u8; 8 + 2],
 }
 
-impl<'a> R2c3pPort8<'a> {
+impl R2c3pPort8 {
     pub const fn new() -> Self {
         const B_LEN: usize = 8;
         Self {
@@ -568,12 +563,12 @@ impl<'a> R2c3pPort8<'a> {
     }
 }
 
-impl<'a> R2c3pPortT<'a> for R2c3pPort8<'a> {
+impl R2c3pPortT for R2c3pPort8 {
     fn get_p(&self) -> &R2c3pPort {
         &self.p
     }
 
-    fn get_p_mut(&mut self) -> &mut R2c3pPort<'a> {
+    fn get_p_mut(&mut self) -> &mut R2c3pPort {
         &mut self.p
     }
 
@@ -588,7 +583,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort8<'a> {
         }
     }
 
-    fn get_body(&'a self) -> &'a [u8] {
+    fn get_body(&self) -> &[u8] {
         match self.get_m_len() {
             Some(len) => &self.b[0..len],
             // empty
@@ -596,7 +591,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort8<'a> {
         }
     }
 
-    fn eat(&'a mut self) -> Option<Eat<'a>> {
+    fn eat(&mut self) -> Option<Eat> {
         let b = match self.get_m_len() {
             Some(len) => &self.b[0..len],
             None => &self.b[0..0],
@@ -606,12 +601,12 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort8<'a> {
 }
 
 /// 含有 32 字节 (使用 crc16) 接收缓冲区
-pub struct R2c3pPort32<'a> {
-    p: R2c3pPort<'a>,
+pub struct R2c3pPort32 {
+    p: R2c3pPort,
     b: [u8; 32 + 2],
 }
 
-impl<'a> R2c3pPort32<'a> {
+impl R2c3pPort32 {
     pub const fn new() -> Self {
         const B_LEN: usize = 32;
         Self {
@@ -621,12 +616,12 @@ impl<'a> R2c3pPort32<'a> {
     }
 }
 
-impl<'a> R2c3pPortT<'a> for R2c3pPort32<'a> {
+impl R2c3pPortT for R2c3pPort32 {
     fn get_p(&self) -> &R2c3pPort {
         &self.p
     }
 
-    fn get_p_mut(&mut self) -> &mut R2c3pPort<'a> {
+    fn get_p_mut(&mut self) -> &mut R2c3pPort {
         &mut self.p
     }
 
@@ -640,7 +635,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort32<'a> {
         }
     }
 
-    fn get_body(&'a self) -> &'a [u8] {
+    fn get_body(&self) -> &[u8] {
         match self.get_m_len() {
             Some(len) => &self.b[0..len],
             // empty
@@ -648,7 +643,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort32<'a> {
         }
     }
 
-    fn eat(&'a mut self) -> Option<Eat<'a>> {
+    fn eat(&mut self) -> Option<Eat> {
         let b = match self.get_m_len() {
             Some(len) => &self.b[0..len],
             None => &self.b[0..0],
@@ -658,12 +653,12 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort32<'a> {
 }
 
 /// 含有 64 字节 (MCU 推荐值) 接收缓冲区
-pub struct R2c3pPort64<'a> {
-    p: R2c3pPort<'a>,
+pub struct R2c3pPort64 {
+    p: R2c3pPort,
     b: [u8; 64 + 2],
 }
 
-impl<'a> R2c3pPort64<'a> {
+impl R2c3pPort64 {
     pub const fn new() -> Self {
         const B_LEN: usize = 64;
         Self {
@@ -673,12 +668,12 @@ impl<'a> R2c3pPort64<'a> {
     }
 }
 
-impl<'a> R2c3pPortT<'a> for R2c3pPort64<'a> {
+impl R2c3pPortT for R2c3pPort64 {
     fn get_p(&self) -> &R2c3pPort {
         &self.p
     }
 
-    fn get_p_mut(&mut self) -> &mut R2c3pPort<'a> {
+    fn get_p_mut(&mut self) -> &mut R2c3pPort {
         &mut self.p
     }
 
@@ -692,7 +687,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort64<'a> {
         }
     }
 
-    fn get_body(&'a self) -> &'a [u8] {
+    fn get_body(&self) -> &[u8] {
         match self.get_m_len() {
             Some(len) => &self.b[0..len],
             // empty
@@ -700,7 +695,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort64<'a> {
         }
     }
 
-    fn eat(&'a mut self) -> Option<Eat<'a>> {
+    fn eat(&mut self) -> Option<Eat> {
         let b = match self.get_m_len() {
             Some(len) => &self.b[0..len],
             None => &self.b[0..0],
@@ -710,12 +705,12 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort64<'a> {
 }
 
 /// 含有 128 字节 (UART 允许的最大值) 接收缓冲区
-pub struct R2c3pPort128<'a> {
-    p: R2c3pPort<'a>,
+pub struct R2c3pPort128 {
+    p: R2c3pPort,
     b: [u8; 128 + 2],
 }
 
-impl<'a> R2c3pPort128<'a> {
+impl R2c3pPort128 {
     pub const fn new() -> Self {
         const B_LEN: usize = 128;
         Self {
@@ -725,12 +720,12 @@ impl<'a> R2c3pPort128<'a> {
     }
 }
 
-impl<'a> R2c3pPortT<'a> for R2c3pPort128<'a> {
+impl R2c3pPortT for R2c3pPort128 {
     fn get_p(&self) -> &R2c3pPort {
         &self.p
     }
 
-    fn get_p_mut(&mut self) -> &mut R2c3pPort<'a> {
+    fn get_p_mut(&mut self) -> &mut R2c3pPort {
         &mut self.p
     }
 
@@ -744,7 +739,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort128<'a> {
         }
     }
 
-    fn get_body(&'a self) -> &'a [u8] {
+    fn get_body(&self) -> &[u8] {
         match self.get_m_len() {
             Some(len) => &self.b[0..len],
             // empty
@@ -752,7 +747,7 @@ impl<'a> R2c3pPortT<'a> for R2c3pPort128<'a> {
         }
     }
 
-    fn eat(&'a mut self) -> Option<Eat<'a>> {
+    fn eat(&mut self) -> Option<Eat> {
         let b = match self.get_m_len() {
             Some(len) => &self.b[0..len],
             None => &self.b[0..0],

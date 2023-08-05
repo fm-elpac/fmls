@@ -12,10 +12,9 @@ use ch32v1::ch32v103 as pac;
 
 use pac::Peripherals as P;
 
-mod led;
-mod r2c3p;
-mod sys_init;
-mod util;
+mod conf;
+mod hal;
+mod r2c3p_c;
 
 #[cfg(feature = "ch32v003")]
 mod ch32v003;
@@ -40,6 +39,7 @@ fn main() -> ! {
     init(&p);
 
     let g = unsafe { &mut SG };
+
     // 主循环
     loop {
         // 一次循环
