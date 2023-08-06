@@ -149,13 +149,15 @@ impl Crc32 {
 /// 如果出错返回 None
 #[cfg(feature = "r2c3p-crc16")]
 pub fn crc_len(len: usize, use_crc32: bool) -> Option<usize> {
+    // 返回使用 crc32 的, 数据长度至少为 5 字节
     let u32b = core::mem::size_of::<u32>();
-    if use_crc32 || len > (MSG_LEN_CRC16 as usize + u32b) {
+    if (len > u32b) && (use_crc32 || len > (MSG_LEN_CRC16 as usize + u32b)) {
         return Some(u32b);
     }
 
+    // 返回使用 crc16 的, 数据长度至少为 3 字节
     let u16b = core::mem::size_of::<u16>();
-    if len <= (MSG_LEN_CRC16 as usize + u16b) {
+    if (len > u16b) && (!use_crc32) && (len <= (MSG_LEN_CRC16 as usize + u16b)) {
         return Some(u16b);
     }
 
@@ -222,6 +224,9 @@ mod test {
 
     #[test]
     fn test_crc_len() {
+        assert_eq!(crc_len(0, false), None);
+        assert_eq!(crc_len(1, false), None);
+        assert_eq!(crc_len(2, false), None);
         assert_eq!(crc_len(3, false), Some(2));
         assert_eq!(crc_len(33, false), Some(2));
         assert_eq!(crc_len(34, false), Some(2));
@@ -229,5 +234,13 @@ mod test {
         assert_eq!(crc_len(36, false), None);
         assert_eq!(crc_len(37, false), Some(4));
         assert_eq!(crc_len(38, false), Some(4));
+
+        assert_eq!(crc_len(0, true), None);
+        assert_eq!(crc_len(1, true), None);
+        assert_eq!(crc_len(2, true), None);
+        assert_eq!(crc_len(3, true), None);
+        assert_eq!(crc_len(4, true), None);
+        assert_eq!(crc_len(5, true), Some(4));
+        assert_eq!(crc_len(6, true), Some(4));
     }
 }

@@ -1,5 +1,54 @@
 //! 字节处理工具
 
+/// 先进先出缓冲
+pub struct Fifo<const N: usize> {
+    // 内部缓冲区
+    b: [u8; N],
+    // 当前位置
+    i: usize,
+}
+
+impl<const N: usize> Fifo<N> {
+    pub const fn new() -> Self {
+        Self { b: [0; N], i: 0 }
+    }
+
+    // 返回下一个 i
+    fn next_i(mut i: usize) -> usize {
+        i += 1;
+        if i >= N {
+            i = 0;
+        }
+        i
+    }
+
+    /// 一次喂入一个字节, 返回前 N 个字节
+    pub fn feed(&mut self, b: u8) -> u8 {
+        // 前 N 个字节
+        let n = self.b[self.i];
+        // 保存输入的字节
+        self.b[self.i] = b;
+        // 更新当前位置
+        self.i = Fifo::<N>::next_i(self.i);
+
+        n
+    }
+
+    /// 返回缓存的数据
+    pub fn get(&self) -> [u8; N] {
+        let mut o: [u8; N] = [0; N];
+        // 保存当前位置
+        let mut i = self.i;
+        let mut j = 0;
+        while j < N {
+            o[j] = self.b[i];
+            i = Fifo::<N>::next_i(i);
+            j += 1;
+        }
+        o
+    }
+}
+
 /// 查找匹配的字节
 pub fn index_of(b: &[u8], u: u8) -> Option<usize> {
     for i in 0..b.len() {

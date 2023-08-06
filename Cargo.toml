@@ -22,8 +22,8 @@ members = [
 
 # 发布编译设置
 [profile.release]
-strip = true
 lto = true
+strip = "debuginfo"
 
 [patch.crates-io]
 #s2n-tls-sys = { path = "./patch/s2n-tls-sys-0.0.34" }

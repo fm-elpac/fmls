@@ -8,7 +8,7 @@ mod send;
 mod sender;
 
 pub use escape_crc::{Escape, Unescape};
-pub use hex::{hex_u16, hex_u32, hex_u64, hex_u8, index_of, n_u8};
+pub use hex::{hex_u16, hex_u32, hex_u64, hex_u8, index_of, n_u8, Fifo};
 pub use msg_type::MsgType;
 pub use recv::LowRecv;
 pub use send::{send_msg_0, send_msg_32f, CrcT, LowSend, LowVSender, C0, C32F};

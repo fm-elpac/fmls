@@ -7,7 +7,7 @@ use super::Unescape;
 #[cfg(feature = "r2c3p-crc16")]
 use super::{crc_len, Crc16};
 #[cfg(feature = "r2c3p-crc32")]
-use super::{CrcT, C32};
+use super::{CrcT, Fifo, C32};
 
 #[derive(PartialEq)]
 enum LowRecvS {
@@ -34,6 +34,9 @@ pub struct LowRecv<const N: usize> {
     // 用于计算 crc32
     #[cfg(feature = "r2c3p-crc32")]
     c: C32,
+    // 用于太长的消息计算 crc32
+    #[cfg(feature = "r2c3p-crc32")]
+    f4: Fifo<4>,
 
     // 消息丢弃计数
     crd: u32,
@@ -50,6 +53,9 @@ impl<const N: usize> LowRecv<N> {
             e: Unescape::new(),
             #[cfg(feature = "r2c3p-crc32")]
             c: C32::new(),
+            #[cfg(feature = "r2c3p-crc32")]
+            f4: Fifo::new(),
+
             crd: 0,
             cr: 0,
         }
@@ -93,6 +99,11 @@ impl<const N: usize> LowRecv<N> {
     /// 获取附加数据, 成功接收状态返回 `Some()`
     pub fn get_body(&self) -> Option<&[u8]> {
         if LowRecvS::Ok == self.s {
+            // 检查太长
+            if self.get_e2() {
+                return None;
+            }
+
             let b_end = self.m_len - self.crc_l();
             if b_end > 1 {
                 return Some(&self.b[1..b_end]);
@@ -163,8 +174,9 @@ impl<const N: usize> LowRecv<N> {
                             c.feed(*i);
                         }
                         let cc = c.result().to_le_bytes();
-                        // 接收的 crc 的值
-                        let cr = &self.b[(self.m_len - 2)..self.m_len];
+                        // 接收的 crc 的值, 处理消息太长
+                        let end = if self.m_len <= N { self.m_len } else { N };
+                        let cr = &self.b[(end - 2)..end];
                         if cc != cr {
                             // crc 错误
                             self.msg_end_drop();
@@ -176,8 +188,8 @@ impl<const N: usize> LowRecv<N> {
                     4 => {
                         // 计算的 crc 的值
                         let cc = self.c.result();
-                        // 接收的 crc 的值
-                        let cr = &self.b[(self.m_len - 4)..self.m_len];
+                        // 接收的 crc 的值, 考虑太长的消息
+                        let cr = self.f4.get();
                         if cc != cr {
                             // crc 错误
                             self.msg_end_drop();
@@ -239,13 +251,20 @@ impl<const N: usize> LowRecv<N> {
                 }
 
                 // 接收的字节放入缓冲区
-                self.b[self.m_len] = b;
+                if self.m_len < N {
+                    self.b[self.m_len] = b;
+                }
                 self.m_len += 1;
 
                 // 实时计算 crc32
                 #[cfg(feature = "r2c3p-crc32")]
-                if self.m_len > 4 {
-                    self.c.feed(self.b[self.m_len - 5]);
+                {
+                    // 用于太长的消息检查 crc32
+                    self.f4.feed(b);
+
+                    if self.m_len > 4 {
+                        self.c.feed(self.b[self.m_len - 5]);
+                    }
                 }
             }
             _ => unreachable!(),
