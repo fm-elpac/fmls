@@ -2,29 +2,31 @@
 
 use core::iter::Iterator;
 
-use libfmlsm::r2c3p as p;
-use libfmlsm::r2c3p_util::{Eat, HexU32Sender, MsgSender, NoneSender, VSender, VecSender};
+use libfmlsm::r2c3p_low::{LowSend, LowVSender, NoneSender};
+
+#[cfg(not(feature = "not-mini"))]
+use libfmlsm::r2c3p::MSGT_V;
+#[cfg(not(feature = "not-mini"))]
+use libfmlsm::r2c3p_low::{send_msg_0, C0};
+#[cfg(feature = "r2c3p-crc16")]
+use libfmlsm::r2c3p_low::{send_msg_16, C16};
+#[cfg(feature = "not-mini")]
+use libfmlsm::r2c3p_low::{send_v, C32};
 
 use crate::conf::{FW_VER, HW_NAME};
 
 /// 所有可发送的消息
 pub enum Sender {
-    /// 默认消息处理
-    P(Eat),
     /// 发送 `V` 消息
-    V(MsgSender<VSender<HwSender, NoneSender>>),
+    #[cfg(feature = "not-mini")]
+    V(LowSend<LowVSender<12>, C32, 4>),
+    #[cfg(not(feature = "not-mini"))]
+    V(LowSend<LowVSender<12>, C0, 0>),
     /// 发送 `.` 消息
-    D(MsgSender<NoneSender>),
-}
-
-impl Sender {
-    pub fn done(&self) -> bool {
-        match self {
-            Sender::P(s) => s.done(),
-            Sender::V(s) => s.done(),
-            Sender::D(s) => s.done(),
-        }
-    }
+    #[cfg(feature = "r2c3p-crc16")]
+    D(LowSend<NoneSender, C16, 2>),
+    #[cfg(not(feature = "r2c3p-crc16"))]
+    D(LowSend<NoneSender, C0, 0>),
 }
 
 impl Iterator for Sender {
@@ -32,7 +34,6 @@ impl Iterator for Sender {
 
     fn next(&mut self) -> Option<u8> {
         match self {
-            Sender::P(s) => s.next(),
             Sender::V(s) => s.next(),
             Sender::D(s) => s.next(),
         }
@@ -40,80 +41,30 @@ impl Iterator for Sender {
 }
 
 /// 发送 `V` 消息
-pub fn send_v(uid: (u32, u32, u32)) -> Sender {
-    Sender::V(MsgSender::new(
-        p::MSGT_V,
-        VSender::new(FW_VER, HwSender::new(uid), None),
-    ))
-}
+pub fn make_v(uid: (u32, u32, u32)) -> Sender {
+    let mut id: [u8; 12] = [0; 12];
+    id[0..4].copy_from_slice(&u32::to_le_bytes(uid.0));
+    id[4..8].copy_from_slice(&u32::to_le_bytes(uid.1));
+    id[8..12].copy_from_slice(&u32::to_le_bytes(uid.2));
 
-#[derive(PartialEq)]
-enum HwSenderS {
-    /// 正在发送硬件名称
-    Name,
-    /// 正在发送唯一序号
-    Uid(u8),
-    /// 发送完毕
-    None,
-}
-
-/// 发送 `V` 消息的硬件信息 (hardware) 部分
-pub struct HwSender {
-    s: HwSenderS,
-    n: VecSender,
-    u: HexU32Sender,
-    uid: (u32, u32, u32),
-}
-
-impl HwSender {
-    pub fn new(uid: (u32, u32, u32)) -> Self {
-        Self {
-            s: HwSenderS::Name,
-            n: VecSender::new(HW_NAME),
-            u: HexU32Sender::new(uid.0),
-            uid,
-        }
+    #[cfg(feature = "not-mini")]
+    {
+        Sender::V(send_v(FW_VER, HW_NAME, id))
     }
-}
-
-impl Iterator for HwSender {
-    type Item = u8;
-
-    fn next(&mut self) -> Option<u8> {
-        match self.s {
-            HwSenderS::Name => match self.n.next() {
-                Some(b) => Some(b),
-                None => {
-                    self.s = HwSenderS::Uid(0);
-                    // 发送空格
-                    Some(p::BYTE_SPACE)
-                }
-            },
-            HwSenderS::Uid(i) => match self.u.next() {
-                Some(b) => Some(b),
-                None => match i {
-                    0 => {
-                        self.u = HexU32Sender::new(self.uid.1);
-                        self.s = HwSenderS::Uid(1);
-                        self.u.next()
-                    }
-                    1 => {
-                        self.u = HexU32Sender::new(self.uid.2);
-                        self.s = HwSenderS::Uid(2);
-                        self.u.next()
-                    }
-                    _ => {
-                        self.s = HwSenderS::None;
-                        None
-                    }
-                },
-            },
-            HwSenderS::None => None,
-        }
+    #[cfg(not(feature = "not-mini"))]
+    {
+        Sender::V(send_msg_0(MSGT_V, LowVSender::new(FW_VER, HW_NAME, id)))
     }
 }
 
 /// 发送 `.` 消息
-pub fn send_d() -> Sender {
-    Sender::D(MsgSender::new(b'.', NoneSender::new()))
+pub fn make_d() -> Sender {
+    #[cfg(feature = "r2c3p-crc16")]
+    {
+        Sender::D(send_msg_16(b'.', NoneSender::new()))
+    }
+    #[cfg(not(feature = "r2c3p-crc16"))]
+    {
+        Sender::D(send_msg_0(b'.', NoneSender::new()))
+    }
 }

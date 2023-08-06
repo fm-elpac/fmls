@@ -46,18 +46,19 @@ impl R2c3pClient {
 
             // 检查串口并发送
             if let Some(s) = &mut self.s {
-                if !s.done() {
-                    // 首先检查串口空闲
-                    if uart1_可写(p) {
-                        // 发送一个字节
-                        if let Some(b) = s.next() {
+                // 首先检查串口空闲
+                if uart1_可写(p) {
+                    // 发送一个字节
+                    match s.next() {
+                        Some(b) => {
                             uart1_写(p, b);
                         }
+                        None => {
+                            // 发送完毕
+                            self.r.send_end();
+                            self.s = None;
+                        }
                     }
-                } else {
-                    self.r.send_end();
-                    // 发送完毕
-                    self.s = None;
                 }
             }
 
