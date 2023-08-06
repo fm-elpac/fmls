@@ -395,3 +395,6 @@ pub fn send_e4() -> LowSend<BStaticSender, C16, 2> {
 pub fn send_e5() -> LowSend<BStaticSender, C16, 2> {
     send_msg_16(MSGT_E, BStaticSender::new(EB_5))
 }
+
+#[cfg(test)]
+mod test;

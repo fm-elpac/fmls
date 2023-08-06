@@ -125,8 +125,6 @@ impl<const N: usize> Iterator for HexArraySender<N> {
     }
 }
 
-// TODO
-
 #[cfg(test)]
 mod test {
     use super::*;
