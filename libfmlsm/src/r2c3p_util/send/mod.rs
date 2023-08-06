@@ -11,17 +11,17 @@ use libfmlsc::r2c3p::MSGT_V;
 #[cfg(feature = "r2c3p-crc16")]
 use libfmlsc::r2c3p::MSG_LEN_CRC16;
 
-use super::escape_crc::Escape;
 use super::hex::VecSender;
+use super::Escape;
 
-#[cfg(feature = "r2c3p-crc16")]
-use super::escape_crc::Crc16;
-#[cfg(feature = "r2c3p-crc32")]
-use super::escape_crc::Crc32;
 #[cfg(feature = "r2c3p-crc16")]
 use super::hex::U16LeSender;
 #[cfg(feature = "r2c3p-crc32")]
 use super::hex::U32LeSender;
+#[cfg(feature = "r2c3p-crc16")]
+use super::Crc16;
+#[cfg(feature = "r2c3p-crc32")]
+use super::Crc32;
 
 /// MsgSender 的内部状态
 #[derive(PartialEq)]

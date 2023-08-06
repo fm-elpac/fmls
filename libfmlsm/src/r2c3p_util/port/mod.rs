@@ -2,17 +2,17 @@
 
 use libfmlsc::r2c3p as p;
 
-use super::escape_crc::Unescape;
 use super::hex::{NU8Sender, U8Sender, VecSender};
-use super::msg_type::MsgType;
 use super::send::{ESender, MsgSender};
+use super::MsgType;
+use super::Unescape;
 
-#[cfg(feature = "r2c3p-crc32")]
-use super::escape_crc::Crc32;
-#[cfg(feature = "r2c3p-crc16")]
-use super::escape_crc::{crc_len, Crc16};
 #[cfg(feature = "r2c3p-crc16")]
 use super::hex::{Fifo2, Fifo4};
+#[cfg(feature = "r2c3p-crc32")]
+use super::Crc32;
+#[cfg(feature = "r2c3p-crc16")]
+use super::{crc_len, Crc16};
 
 mod eat;
 

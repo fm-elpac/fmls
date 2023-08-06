@@ -43,10 +43,13 @@ ch32v103 = ["ch32v1", "ch32v1/ch32v103"]
 riscv-rt = { git = "https://github.com/9names/riscv-rt", branch = "rv32e" }
 
 [profile.release]
-opt-level = "s"
+opt-level = "z"
 lto = true
+codegen-units = 1
+debug = true
 
+# 不应使用 dev 编译 (代码太大), 应该始终使用 --release
 [profile.dev]
-opt-level = "s"
+opt-level = "z"
 
 [workspace]

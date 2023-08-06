@@ -32,6 +32,10 @@ vv
 Vfmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003f4p6 aa84abcd129abc49ffffffff
 ```
 
+固件对 flash 空间的占用: 8392 字节 (`libfmlsm::r2c3p_util` 2023-08-06)
+
+---
+
 引脚使用: (ch32v003f4p6 TSSOP20)
 
 | 编号 | 名称       | 说明                             |

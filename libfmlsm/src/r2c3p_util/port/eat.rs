@@ -2,10 +2,10 @@
 
 use core::iter::Iterator;
 
-use super::super::hex::{
+use super::super::send::{CSender, ESender, MsgSender};
+use super::super::{
     HexU32Sender, HexU64Sender, HexU8Sender, NU8Sender, NoneSender, U8Sender, VecSender,
 };
-use super::super::send::{CSender, ESender, MsgSender};
 
 /// 需要发送的响应消息 (发送器)
 pub enum Eat {

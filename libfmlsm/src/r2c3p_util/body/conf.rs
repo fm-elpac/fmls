@@ -2,7 +2,7 @@
 
 use libfmlsc::r2c3p as p;
 
-use super::super::hex::{hex_u16, hex_u32, hex_u64, hex_u8, n_u8};
+use super::super::{hex_u16, hex_u32, hex_u64, hex_u8, n_u8};
 
 /// 预定义的配置项 (K)
 #[derive(Debug, Clone, Copy, PartialEq)]

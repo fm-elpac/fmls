@@ -2,7 +2,7 @@
 
 use libfmlsc::r2c3p as p;
 
-use super::hex::{index_of, n_u8};
+use super::{index_of, n_u8};
 
 #[cfg(feature = "r2c3p-c")]
 mod conf;

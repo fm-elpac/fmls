@@ -4,10 +4,10 @@ use libfmlsc::r2c3p as p;
 use libfmlsc::r2c3p::ConfC;
 
 use super::super::body::{read_body, read_conf_k, Body, ConfK};
-use super::super::hex::{
+use super::super::send::{CSender, ESender, MsgSender};
+use super::super::{
     hex_u64, hex_u8, HexU32Sender, HexU64Sender, HexU8Sender, NU8Sender, VecSender,
 };
-use super::super::send::{CSender, ESender, MsgSender};
 use super::eat::Eat;
 
 /// 预定义的配置数据

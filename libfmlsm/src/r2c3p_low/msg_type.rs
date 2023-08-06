@@ -1,6 +1,6 @@
 //! 消息类型判断
 
-use libfmlsc::r2c3p as p;
+use crate::r2c3p as p;
 
 /// 消息类型分类
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

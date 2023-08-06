@@ -7,12 +7,12 @@ use core::iter::Iterator;
 #[cfg(feature = "r2c3p-crc16")]
 use crc::{Crc, Digest};
 
-use libfmlsc::r2c3p::{BYTE_B, BYTE_LF, BYTE_N, BYTE_S};
+use crate::r2c3p::{BYTE_B, BYTE_LF, BYTE_N, BYTE_S};
 
 #[cfg(feature = "r2c3p-crc32")]
-use libfmlsc::r2c3p::CRC_32;
+use crate::r2c3p::CRC_32;
 #[cfg(feature = "r2c3p-crc16")]
-use libfmlsc::r2c3p::{CRC_16, MSG_LEN_CRC16};
+use crate::r2c3p::{CRC_16, MSG_LEN_CRC16};
 
 /// 转义处理
 ///
@@ -96,7 +96,7 @@ const C16: Crc<u16> = Crc::<u16>::new(&CRC_16);
 #[cfg(feature = "r2c3p-crc32")]
 const C32: Crc<u32> = Crc::<u32>::new(&CRC_32);
 
-/// 计算 crc16
+/// 计算 crc16 (底层)
 #[cfg(feature = "r2c3p-crc16")]
 pub struct Crc16 {
     d: Digest<'static, u16>,
@@ -120,7 +120,7 @@ impl Crc16 {
     }
 }
 
-/// 计算 crc32
+/// 计算 crc32 (底层)
 #[cfg(feature = "r2c3p-crc32")]
 pub struct Crc32 {
     d: Digest<'static, u32>,
@@ -145,6 +145,7 @@ impl Crc32 {
 }
 
 /// 根据数据长度选择 crc 类型
+///
 /// 如果出错返回 None
 #[cfg(feature = "r2c3p-crc16")]
 pub fn crc_len(len: usize, use_crc32: bool) -> Option<usize> {
