@@ -3,7 +3,7 @@
 use core::fmt::Debug;
 use core::iter::Iterator;
 
-use crate::r2c3p::{BYTE_LF, BYTE_SPACE, P_VERSION};
+use crate::r2c3p::{BYTE_EQ, BYTE_LF, BYTE_SPACE, P_VERSION};
 
 #[cfg(feature = "r2c3p-crc32")]
 use crate::r2c3p::MSGT_V;
@@ -442,6 +442,73 @@ pub fn send_e4() -> LowSend<BStaticSender, C16, 2> {
 #[cfg(feature = "r2c3p-crc16")]
 pub fn send_e5() -> LowSend<BStaticSender, C16, 2> {
     send_msg_16(MSGT_E, BStaticSender::new(EB_5))
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum LowCSenderS {
+    /// 正在发送 K
+    K,
+    /// 正在发送 V
+    V,
+    /// 发送完毕
+    None,
+}
+
+/// 发送 `C` 消息的数据部分
+#[derive(Debug, Clone)]
+pub struct LowCSender<T: Iterator<Item = u8>> {
+    s: LowCSenderS,
+    // k
+    k: BStaticSender,
+    // v
+    v: Option<T>,
+}
+
+impl<T: Iterator<Item = u8>> LowCSender<T> {
+    pub fn new(k: &'static [u8], v: Option<T>) -> Self {
+        Self {
+            s: LowCSenderS::K,
+            k: BStaticSender::new(k),
+            v,
+        }
+    }
+}
+
+impl<T: Iterator<Item = u8>> Iterator for LowCSender<T> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        match self.s {
+            LowCSenderS::K => match self.k.next() {
+                Some(b) => Some(b),
+                None => {
+                    if self.v.is_some() {
+                        self.s = LowCSenderS::V;
+                        // 发送 `=`
+                        Some(BYTE_EQ)
+                    } else {
+                        // 发送完毕
+                        self.s = LowCSenderS::None;
+                        None
+                    }
+                }
+            },
+            LowCSenderS::V => match &mut self.v {
+                Some(s) => match s.next() {
+                    Some(b) => Some(b),
+                    None => {
+                        self.s = LowCSenderS::None;
+                        None
+                    }
+                },
+                None => {
+                    self.s = LowCSenderS::None;
+                    None
+                }
+            },
+            LowCSenderS::None => None,
+        }
+    }
 }
 
 #[cfg(test)]

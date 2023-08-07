@@ -2,18 +2,11 @@
 
 use crate::r2c3p as p;
 
-use super::super::body::{read_body, read_conf_k, Body};
+use super::super::body::{read_body, Body};
 use super::super::send::{ESender, MsgSender};
 use super::eat::Eat;
-use crate::r2c3p_low::BStaticSender;
+use crate::r2c3p_low::{read_conf_k, BStaticSender};
 
-#[cfg(any(
-    feature = "r2c3p-cc",
-    feature = "r2c3p-i",
-    feature = "r2c3p-o",
-    feature = "r2c3p-at"
-))]
-use super::super::body::ConfK;
 #[cfg(any(
     feature = "r2c3p-cc",
     feature = "r2c3p-i",
@@ -33,6 +26,13 @@ use super::super::NU8Sender;
 use crate::r2c3p_low::hex_u64;
 #[cfg(feature = "r2c3p-o")]
 use crate::r2c3p_low::hex_u8;
+#[cfg(any(
+    feature = "r2c3p-cc",
+    feature = "r2c3p-i",
+    feature = "r2c3p-o",
+    feature = "r2c3p-at"
+))]
+use crate::r2c3p_low::ConfK;
 
 /// 预定义的配置数据
 #[derive(Debug, Clone, PartialEq, Default)]

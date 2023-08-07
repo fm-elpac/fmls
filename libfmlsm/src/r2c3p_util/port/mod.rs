@@ -147,8 +147,18 @@ impl<const N: usize> R2c3pPort<N> {
                 // 处理 `c` 消息
                 #[cfg(feature = "r2c3p-c")]
                 p::MSGT_C_R => {
-                    let body = self.r.get_body().unwrap();
-                    return self.conf.eat_c(body);
+                    match self.r.get_body() {
+                        Some(b) => {
+                            return self.conf.eat_c(b);
+                        }
+                        None => {
+                            // `E-4` 错误
+                            return Some(Eat::E(MsgSender::new(
+                                p::MSGT_E,
+                                ESender::new(BStaticSender::new(p::EB_4), None),
+                            )));
+                        }
+                    }
                 }
                 // 未知消息类型, 返回 `E-3` 错误
                 _ => {

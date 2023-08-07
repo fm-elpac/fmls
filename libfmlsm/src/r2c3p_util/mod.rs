@@ -15,6 +15,6 @@ pub use port::{Eat, R2c3pPort, R2c3pPort128, R2c3pPort32, R2c3pPort64, R2c3pPort
 pub use send::{CSender, ESender, MsgSender, VSender};
 
 #[cfg(feature = "r2c3p-c")]
-pub use body::{read_conf_k, read_conf_v, ConfK, ConfV};
+pub use body::{read_conf_v, ConfV};
 #[cfg(feature = "r2c3p-c")]
 pub use port::ConfData;

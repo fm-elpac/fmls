@@ -8,7 +8,7 @@ use crate::r2c3p_low::{index_of, n_u8};
 mod conf;
 
 #[cfg(feature = "r2c3p-c")]
-pub use conf::{read_conf_k, read_conf_v, ConfK, ConfV};
+pub use conf::{read_conf_v, ConfV};
 
 /// 消息的附加数据的类型
 #[derive(Debug, Clone, PartialEq)]
