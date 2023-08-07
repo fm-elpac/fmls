@@ -23,7 +23,7 @@ use conf_item::ConfItemO;
 pub use msg_type::{MsgType, MsgTypeReq, MsgTypeRes, MsgTypeS};
 
 /// 一条消息
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Msg {
     /// 自定义消息
     A {
@@ -91,7 +91,7 @@ impl From<Msg> for Vec<u8> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MsgO(pub Option<Msg>);
 
 // `Vec<u8>` 转换为消息 (带错误处理)
@@ -144,7 +144,7 @@ impl From<Vec<u8>> for MsgO {
 }
 
 /// 预定义 请求消息
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MsgReq {
     /// `v` 获取设备固件版本信息
     V,
@@ -181,7 +181,7 @@ impl From<MsgReq> for Vec<u8> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MsgReqO(pub Option<MsgReq>);
 
 // `(MsgTypeReq, Option<Vec<u8>>)` 转换为请求消息 (带错误处理)
@@ -207,7 +207,7 @@ impl From<(MsgTypeReq, Option<Vec<u8>>)> for MsgReqO {
 }
 
 /// 预定义 响应消息
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MsgRes {
     /// `V` 设备固件版本信息
     V {
@@ -307,7 +307,7 @@ impl From<MsgRes> for Vec<u8> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MsgResO(pub Option<MsgRes>);
 
 // `(MsgTypeRes, Option<Vec<u8>>)` 转换为响应消息 (带错误处理)
@@ -377,7 +377,7 @@ impl From<(MsgTypeRes, Option<Vec<u8>>)> for MsgResO {
 }
 
 /// 预定义 静默消息
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MsgS {
     /// `@` 用于 r2 集线器
     At(Option<MsgAt>),
@@ -408,7 +408,7 @@ impl From<MsgS> for Vec<u8> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MsgSO(pub Option<MsgS>);
 
 // `(MsgTypeS, Option<Vec<u8>>)` 转换为静默消息 (带错误处理)
@@ -427,7 +427,7 @@ impl From<(MsgTypeS, Option<Vec<u8>>)> for MsgSO {
 }
 
 /// 预定义 静默消息 `@` 的附加数据
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MsgAt {
     /// 节点号
     pub n: u8,

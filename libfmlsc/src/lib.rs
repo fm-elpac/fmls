@@ -7,5 +7,3 @@
 //! <https://github.com/fm-elpac/fmls>
 
 pub mod r2c3p;
-
-// TODO

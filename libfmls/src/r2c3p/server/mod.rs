@@ -1,13 +1,28 @@
 //! 封装的接口
 
-use libfmlsc::r2c3p::{ConfC, BYTE_LF, MSGT_V, MSGT_V_R};
+use libfmlsc::r2c3p::{BYTE_LF, MSGT_V, MSGT_V_R};
 
 use super::escape_crc::{crc_check, crc_send, escape, unescape};
 use super::msg::MsgO;
 use super::{Msg, MsgRecvErr, MsgReq, MsgRes};
 
+/// 传输质量监测计数器
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct TC {
+    /// `cT` 总计发送的消息数量
+    pub t: u32,
+    /// `cR` 总计成功接收的消息数量
+    pub r: u32,
+    /// `cRd` 总计丢弃的接收的消息数量
+    pub rd: u32,
+    /// `cTB` 总计发送的字节数
+    pub tb: u32,
+    /// `cRB` 总计成功接收的字节数
+    pub rb: u32,
+}
+
 /// 喂给 (feed) 字节数据 (`Vec<u8>`) 后产出的一条结果
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum FeedResult {
     /// 消息接收错误
     E(MsgRecvErr),
@@ -19,9 +34,10 @@ pub enum FeedResult {
 ///
 /// 纯状态机, 需要外部处理输入输出
 /// 一个实例只能处理一个 r2c3p 连接
+#[derive(Debug, Clone)]
 pub struct R2c3pServer {
     /// 传输质量监测计数器
-    tc: ConfC,
+    tc: TC,
 
     /// 内部缓冲区, 存储还未完整接收的消息数据
     b: Option<Vec<u8>>,
@@ -32,13 +48,13 @@ pub struct R2c3pServer {
 impl R2c3pServer {
     pub fn new() -> Self {
         Self {
-            tc: ConfC::default(),
+            tc: TC::default(),
             b: None,
         }
     }
 
     /// 获取传输质量监测计数器的当前值
-    pub fn get_tc(&self) -> ConfC {
+    pub fn get_tc(&self) -> TC {
         self.tc.clone()
     }
 

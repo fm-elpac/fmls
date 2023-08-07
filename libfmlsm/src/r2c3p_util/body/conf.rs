@@ -1,8 +1,24 @@
 //! 配置项数据
 
-use libfmlsc::r2c3p as p;
+#[cfg(any(
+    feature = "r2c3p-t",
+    feature = "r2c3p-i",
+    feature = "r2c3p-cc",
+    feature = "r2c3p-o",
+    feature = "r2c3p-at"
+))]
+use crate::r2c3p as p;
 
-use super::super::{hex_u16, hex_u32, hex_u64, hex_u8, n_u8};
+#[cfg(feature = "r2c3p-t")]
+use crate::r2c3p_low::hex_u16;
+#[cfg(any(feature = "r2c3p-cc", feature = "r2c3p-at"))]
+use crate::r2c3p_low::hex_u32;
+#[cfg(feature = "r2c3p-i")]
+use crate::r2c3p_low::hex_u64;
+#[cfg(feature = "r2c3p-o")]
+use crate::r2c3p_low::hex_u8;
+#[cfg(feature = "r2c3p-at")]
+use crate::r2c3p_low::n_u8;
 
 /// 预定义的配置项 (K)
 #[derive(Debug, Clone, Copy, PartialEq)]

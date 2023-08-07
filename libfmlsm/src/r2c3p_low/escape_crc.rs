@@ -2,6 +2,7 @@
 //!
 //! 用于 UART 方式传输
 
+use core::fmt::Debug;
 use core::iter::Iterator;
 
 #[cfg(feature = "r2c3p-crc16")]
@@ -17,6 +18,7 @@ use crate::r2c3p::{CRC_16, MSG_LEN_CRC16};
 /// 转义处理
 ///
 /// 用于发送消息之前, 一次处理一个字节
+#[derive(Debug, Clone)]
 pub struct Escape {
     /// 转义时, 用于发送的下一个字节
     next_byte: Option<u8>,
@@ -57,6 +59,7 @@ impl Iterator for Escape {
 /// 取消转义处理
 ///
 /// 用于接收消息之后, 一次处理一个字节
+#[derive(Debug, Clone)]
 pub struct Unescape {
     /// 转义模式标志
     ef: bool,
@@ -98,6 +101,7 @@ const C32: Crc<u32> = Crc::<u32>::new(&CRC_32);
 
 /// 计算 crc16 (底层)
 #[cfg(feature = "r2c3p-crc16")]
+#[derive(Clone)]
 pub struct Crc16 {
     d: Digest<'static, u16>,
 }
@@ -120,8 +124,16 @@ impl Crc16 {
     }
 }
 
+#[cfg(feature = "r2c3p-crc16")]
+impl Debug for Crc16 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Crc16").finish()
+    }
+}
+
 /// 计算 crc32 (底层)
 #[cfg(feature = "r2c3p-crc32")]
+#[derive(Clone)]
 pub struct Crc32 {
     d: Digest<'static, u32>,
 }
@@ -141,6 +153,13 @@ impl Crc32 {
     /// 获取计算结果
     pub fn result(self) -> u32 {
         self.d.finalize()
+    }
+}
+
+#[cfg(feature = "r2c3p-crc32")]
+impl Debug for Crc32 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Crc32").finish()
     }
 }
 

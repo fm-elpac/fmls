@@ -1,8 +1,8 @@
 //! 消息的附加数据读取
 
-use libfmlsc::r2c3p as p;
+use crate::r2c3p as p;
 
-use super::{index_of, n_u8};
+use crate::r2c3p_low::{index_of, n_u8};
 
 #[cfg(feature = "r2c3p-c")]
 mod conf;

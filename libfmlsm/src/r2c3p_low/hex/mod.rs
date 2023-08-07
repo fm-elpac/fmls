@@ -1,6 +1,7 @@
 //! 字节处理工具
 
 /// 先进先出缓冲
+#[derive(Debug, Clone)]
 pub struct Fifo<const N: usize> {
     // 内部缓冲区
     b: [u8; N],

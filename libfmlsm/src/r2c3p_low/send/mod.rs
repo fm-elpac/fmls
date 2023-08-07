@@ -1,5 +1,6 @@
 //! 发送消息
 
+use core::fmt::Debug;
 use core::iter::Iterator;
 
 use crate::r2c3p::{BYTE_LF, BYTE_SPACE, P_VERSION};
@@ -16,8 +17,8 @@ use super::Crc16;
 #[cfg(feature = "r2c3p-crc32")]
 use super::Crc32;
 
-#[derive(PartialEq)]
-enum LowSendS {
+#[derive(Debug, Clone, PartialEq)]
+enum LowSendCS {
     // 正在发送消息类型
     T,
     // 正在发送附加数据
@@ -28,12 +29,11 @@ enum LowSendS {
     None,
 }
 
-/// 发送一条消息
-pub struct LowSend<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> {
+/// 发送一条消息 (不含转义处理)
+#[derive(Debug, Clone)]
+pub struct LowSendC<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> {
     // 发送状态
-    s: LowSendS,
-    // 用于转义处理
-    e: Escape,
+    s: LowSendCS,
     // 用于计算 crc
     c: C,
     // 发送消息的附加数据
@@ -44,11 +44,10 @@ pub struct LowSend<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> {
     cs: BArraySender<N>,
 }
 
-impl<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> LowSend<T, C, N> {
+impl<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> LowSendC<T, C, N> {
     pub fn new(t: u8, d: T, c: C) -> Self {
         Self {
-            s: LowSendS::T,
-            e: Escape::new(),
+            s: LowSendCS::T,
             c,
             d,
             t,
@@ -60,8 +59,62 @@ impl<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> LowSend<T, C, N> {
     fn send_b(&mut self, b: u8) -> u8 {
         // 计算 crc
         self.c.feed(b);
-        // 处理转义
-        self.e.feed(b)
+        b
+    }
+}
+
+impl<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> Iterator for LowSendC<T, C, N> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        match self.s {
+            LowSendCS::T => {
+                let b = self.send_b(self.t);
+                self.s = LowSendCS::D;
+
+                Some(b)
+            }
+            LowSendCS::D => match self.d.next() {
+                Some(b) => Some(self.send_b(b)),
+                None => {
+                    // 准备发送 crc
+                    self.cs = BArraySender::new(self.c.result());
+                    self.s = LowSendCS::C;
+                    self.next()
+                }
+            },
+            LowSendCS::C => match self.cs.next() {
+                // 发送 CRC, 无需再计算 crc
+                Some(b) => Some(b),
+                None => {
+                    // 发送完毕
+                    self.s = LowSendCS::None;
+                    None
+                }
+            },
+            LowSendCS::None => None,
+        }
+    }
+}
+
+/// 发送一条消息
+#[derive(Debug, Clone)]
+pub struct LowSend<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> {
+    // 发送状态 (true 表示发送完成)
+    s: bool,
+    // 内部发送器 (不含转义处理)
+    c: LowSendC<T, C, N>,
+    // 用于转义处理
+    e: Escape,
+}
+
+impl<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> LowSend<T, C, N> {
+    pub fn new(t: u8, d: T, c: C) -> Self {
+        Self {
+            s: false,
+            c: LowSendC::new(t, d, c),
+            e: Escape::new(),
+        }
     }
 }
 
@@ -74,37 +127,27 @@ impl<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize> Iterator for LowSend<T,
             return Some(b);
         }
 
-        match self.s {
-            LowSendS::T => {
-                let b = self.send_b(self.t);
-                self.s = LowSendS::D;
-
-                Some(b)
-            }
-            LowSendS::D => match self.d.next() {
-                Some(b) => Some(self.send_b(b)),
-                None => {
-                    // 准备发送 crc
-                    self.cs = BArraySender::new(self.c.result());
-                    self.s = LowSendS::C;
-                    self.next()
+        if self.s {
+            None
+        } else {
+            match self.c.next() {
+                Some(b) => {
+                    // 处理转义
+                    Some(self.e.feed(b))
                 }
-            },
-            LowSendS::C => match self.cs.next() {
-                Some(b) => Some(self.send_b(b)),
                 None => {
-                    self.s = LowSendS::None;
+                    // 发送完毕
+                    self.s = true;
                     // 发送消息结束字节
                     Some(BYTE_LF)
                 }
-            },
-            LowSendS::None => None,
+            }
         }
     }
 }
 
 /// CRC 计算接口
-pub trait CrcT<const N: usize> {
+pub trait CrcT<const N: usize>: Debug + Clone {
     /// 重置 crc 计算
     fn reset(&mut self);
 
@@ -118,6 +161,7 @@ pub trait CrcT<const N: usize> {
 }
 
 /// 不计算 CRC
+#[derive(Debug, Clone)]
 pub struct C0 {}
 
 impl C0 {
@@ -137,6 +181,7 @@ impl CrcT<0> for C0 {
 
 /// 计算 crc16 (封装)
 #[cfg(feature = "r2c3p-crc16")]
+#[derive(Debug, Clone)]
 pub struct C16 {
     c: Option<Crc16>,
 }
@@ -173,6 +218,7 @@ impl CrcT<2> for C16 {
 
 /// 计算 crc32 (封装)
 #[cfg(feature = "r2c3p-crc32")]
+#[derive(Debug, Clone)]
 pub struct C32 {
     c: Option<Crc32>,
 }
@@ -208,6 +254,7 @@ impl CrcT<4> for C32 {
 }
 
 /// 使用固定 crc32 值
+#[derive(Debug, Clone)]
 pub struct C32F {
     c: [u8; 4],
 }
@@ -249,7 +296,7 @@ pub fn send_msg_32f<T: Iterator<Item = u8>>(t: u8, d: T, c: [u8; 4]) -> LowSend<
     LowSend::new(t, d, C32F::new(c))
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 enum LowVSenderS {
     /// 正在发送 p
     P,
@@ -264,6 +311,7 @@ enum LowVSenderS {
 }
 
 /// 发送 `V` 消息的数据部分 (不支持 extra)
+#[derive(Debug, Clone)]
 pub struct LowVSender<const N: usize> {
     s: LowVSenderS,
     // 固件名称

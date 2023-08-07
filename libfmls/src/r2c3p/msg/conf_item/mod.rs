@@ -4,7 +4,7 @@ use super::hex;
 use libfmlsc::r2c3p as p;
 
 /// 配置项的 K
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ConfItemK {
     /// 自定义配置项
     K(Vec<u8>),
@@ -87,7 +87,7 @@ impl From<Vec<u8>> for ConfItemK {
 }
 
 /// 配置项
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ConfItem {
     /// 自定义配置项
     K {
@@ -226,7 +226,7 @@ impl From<Vec<u8>> for ConfItem {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ConfItemO(pub Option<ConfItem>);
 
 // `Vec<u8>` 转换为配置项 (带错误处理)

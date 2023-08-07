@@ -1,6 +1,9 @@
 //! 接收消息
 
-use crate::r2c3p::{BYTE_LF, MSGT_V, MSGT_V_R};
+use crate::r2c3p::{BYTE_LF, MSGT_V_R};
+
+#[cfg(feature = "r2c3p-crc16")]
+use crate::r2c3p::MSGT_V;
 
 use super::Unescape;
 
@@ -9,7 +12,7 @@ use super::{crc_len, Crc16};
 #[cfg(feature = "r2c3p-crc32")]
 use super::{CrcT, Fifo, C32};
 
-#[derive(PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 enum LowRecvS {
     /// 正在接收消息数据 (消息类型+附加数据+CRC)
     D,
@@ -22,6 +25,7 @@ enum LowRecvS {
 /// 接收消息
 ///
 /// `N`: 内部接收缓冲区长度, 可接收的实际消息长度需要减去 crc
+#[derive(Debug, Clone)]
 pub struct LowRecv<const N: usize> {
     // 当前状态
     s: LowRecvS,

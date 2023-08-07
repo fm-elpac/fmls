@@ -1,40 +1,6 @@
 use super::*;
 
 #[test]
-fn fifo2() {
-    let mut f = Fifo2::new();
-    assert_eq!(f.feed(1), None);
-    assert_eq!(f.feed(2), None);
-    assert_eq!(f.feed(3), Some(1));
-    assert_eq!(f.feed(4), Some(2));
-    assert_eq!(f.feed(5), Some(3));
-    assert_eq!(f.feed(6), Some(4));
-    assert_eq!(f.feed(7), Some(5));
-    assert_eq!(f.feed(8), Some(6));
-}
-
-#[test]
-fn fifo4() {
-    let mut f = Fifo4::new();
-    assert_eq!(f.feed(1), None);
-    assert_eq!(f.feed(2), None);
-    assert_eq!(f.feed(3), None);
-    assert_eq!(f.feed(4), None);
-    assert_eq!(f.feed(5), Some(1));
-    assert_eq!(f.feed(6), Some(2));
-    assert_eq!(f.feed(7), Some(3));
-    assert_eq!(f.feed(8), Some(4));
-    assert_eq!(f.feed(9), Some(5));
-    assert_eq!(f.feed(10), Some(6));
-    assert_eq!(f.feed(11), Some(7));
-    assert_eq!(f.feed(12), Some(8));
-    assert_eq!(f.feed(13), Some(9));
-    assert_eq!(f.feed(14), Some(10));
-    assert_eq!(f.feed(15), Some(11));
-    assert_eq!(f.feed(16), Some(12));
-}
-
-#[test]
 fn u16le_sender() {
     let mut s = U16LeSender::new(0x1234);
     assert_eq!(s.next(), Some(0x34));
@@ -108,21 +74,6 @@ fn hex_u64_sender() {
     assert_eq!(s.next(), Some(b'd'));
     assert_eq!(s.next(), Some(b'e'));
     assert_eq!(s.next(), Some(b'f'));
-    assert_eq!(s.next(), None);
-    assert_eq!(s.next(), None);
-}
-
-#[test]
-fn vec_sender() {
-    let mut s = VecSender::new(b"test 666");
-    assert_eq!(s.next(), Some(b't'));
-    assert_eq!(s.next(), Some(b'e'));
-    assert_eq!(s.next(), Some(b's'));
-    assert_eq!(s.next(), Some(b't'));
-    assert_eq!(s.next(), Some(b' '));
-    assert_eq!(s.next(), Some(b'6'));
-    assert_eq!(s.next(), Some(b'6'));
-    assert_eq!(s.next(), Some(b'6'));
     assert_eq!(s.next(), None);
     assert_eq!(s.next(), None);
 }
@@ -226,14 +177,6 @@ fn n_u8_sender() {
     assert_eq!(s.next(), Some(b'2'));
     assert_eq!(s.next(), Some(b'5'));
     assert_eq!(s.next(), Some(b'5'));
-    assert_eq!(s.next(), None);
-    assert_eq!(s.next(), None);
-}
-
-#[test]
-fn u8_sender() {
-    let mut s = U8Sender::new(0x02);
-    assert_eq!(s.next(), Some(0x02));
     assert_eq!(s.next(), None);
     assert_eq!(s.next(), None);
 }

@@ -5,6 +5,7 @@ use core::iter::Iterator;
 use crate::r2c3p::BYTE_HEX;
 
 /// 什么也不发送
+#[derive(Debug, Clone)]
 pub struct NoneSender {}
 
 impl NoneSender {
@@ -22,6 +23,7 @@ impl Iterator for NoneSender {
 }
 
 /// 字节数组发送器 `[u8; N]`
+#[derive(Debug, Clone)]
 pub struct BArraySender<const N: usize> {
     // 要发送的数据
     b: [u8; N],
@@ -50,6 +52,7 @@ impl<const N: usize> Iterator for BArraySender<N> {
 }
 
 /// 字节静态引用发送器 `&'static [u8]`
+#[derive(Debug, Clone)]
 pub struct BStaticSender {
     b: &'static [u8],
     i: usize,
@@ -75,7 +78,7 @@ impl Iterator for BStaticSender {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 enum ByteHex {
     // 高位 (第一个 hex 字符)
     H,
@@ -84,6 +87,7 @@ enum ByteHex {
 }
 
 /// `hex` 字节数组发送器 `[u8; N]`
+#[derive(Debug, Clone)]
 pub struct HexArraySender<const N: usize> {
     b: [u8; N],
     i: usize,

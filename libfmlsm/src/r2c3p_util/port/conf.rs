@@ -1,21 +1,45 @@
 //! 预定义的配置项 (内置配置处理)
 
-use libfmlsc::r2c3p as p;
-use libfmlsc::r2c3p::ConfC;
+use crate::r2c3p as p;
 
-use super::super::body::{read_body, read_conf_k, Body, ConfK};
-use super::super::send::{CSender, ESender, MsgSender};
-use super::super::{
-    hex_u64, hex_u8, HexU32Sender, HexU64Sender, HexU8Sender, NU8Sender, VecSender,
-};
+use super::super::body::{read_body, read_conf_k, Body};
+use super::super::send::{ESender, MsgSender};
 use super::eat::Eat;
+use crate::r2c3p_low::BStaticSender;
+
+#[cfg(any(
+    feature = "r2c3p-cc",
+    feature = "r2c3p-i",
+    feature = "r2c3p-o",
+    feature = "r2c3p-at"
+))]
+use super::super::body::ConfK;
+#[cfg(any(
+    feature = "r2c3p-cc",
+    feature = "r2c3p-i",
+    feature = "r2c3p-o",
+    feature = "r2c3p-at"
+))]
+use super::super::send::CSender;
+#[cfg(feature = "r2c3p-cc")]
+use super::super::HexU32Sender;
+#[cfg(feature = "r2c3p-i")]
+use super::super::HexU64Sender;
+#[cfg(feature = "r2c3p-o")]
+use super::super::HexU8Sender;
+#[cfg(feature = "r2c3p-at")]
+use super::super::NU8Sender;
+#[cfg(feature = "r2c3p-i")]
+use crate::r2c3p_low::hex_u64;
+#[cfg(feature = "r2c3p-o")]
+use crate::r2c3p_low::hex_u8;
 
 /// 预定义的配置数据
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct ConfData {
     /// 传输质量监测计数器: `cT`, `cR`, `cRd`, `cTB`, `cRB`
-    #[cfg(feature = "r2c3p-cc")]
-    pub tc: ConfC,
+    // #[cfg(feature = "r2c3p-cc")]
+    // pub tc: ConfC,
     /// 配置项 `I`
     #[cfg(feature = "r2c3p-i")]
     pub i: u64,
@@ -33,14 +57,14 @@ pub struct ConfData {
 impl ConfData {
     pub const fn new() -> Self {
         Self {
-            #[cfg(feature = "r2c3p-cc")]
-            tc: ConfC {
-                t: 0,
-                r: 0,
-                rd: 0,
-                tb: 0,
-                rb: 0,
-            },
+            // #[cfg(feature = "r2c3p-cc")]
+            // tc: ConfC {
+            //     t: 0,
+            //     r: 0,
+            //     rd: 0,
+            //     tb: 0,
+            //     rb: 0,
+            // },
             #[cfg(feature = "r2c3p-i")]
             i: 0,
             #[cfg(feature = "r2c3p-o")]
@@ -58,14 +82,14 @@ impl ConfData {
         fn e4() -> Option<Eat> {
             Some(Eat::E(MsgSender::new(
                 p::MSGT_E,
-                ESender::new(VecSender::new(p::EB_4), None),
+                ESender::new(BStaticSender::new(p::EB_4), None),
             )))
         }
         // 生成 `E-5` 错误
         fn e5() -> Option<Eat> {
             Some(Eat::E(MsgSender::new(
                 p::MSGT_E,
-                ESender::new(VecSender::new(p::EB_5), None),
+                ESender::new(BStaticSender::new(p::EB_5), None),
             )))
         }
         // 生成 `C` 消息
@@ -111,28 +135,28 @@ impl ConfData {
                         }
                         None => {
                             // 返回计数器的值
-                            c_hex_u32(p::CONF_CT, self.tc.t)
+                            c_hex_u32(p::CONF_CT, 0)
                         }
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CR => match v {
                         Some(_) => e5(),
-                        None => c_hex_u32(p::CONF_CR, self.tc.r),
+                        None => c_hex_u32(p::CONF_CR, 0),
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CRd => match v {
                         Some(_) => e5(),
-                        None => c_hex_u32(p::CONF_CRD, self.tc.rd),
+                        None => c_hex_u32(p::CONF_CRD, 0),
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CTB => match v {
                         Some(_) => e5(),
-                        None => c_hex_u32(p::CONF_CTB, self.tc.tb),
+                        None => c_hex_u32(p::CONF_CTB, 0),
                     },
                     #[cfg(feature = "r2c3p-cc")]
                     ConfK::CRB => match v {
                         Some(_) => e5(),
-                        None => c_hex_u32(p::CONF_CRB, self.tc.rb),
+                        None => c_hex_u32(p::CONF_CRB, 0),
                     },
                     #[cfg(feature = "r2c3p-i")]
                     ConfK::I => match v {

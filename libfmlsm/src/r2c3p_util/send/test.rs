@@ -11,7 +11,8 @@ use libfmls::r2c3p::{
     ConfItem, FeedResult, Msg, MsgAt, MsgReq, MsgRes, MsgS, MsgType, R2c3pServer, P_VERSION,
 };
 
-use super::super::*;
+use crate::r2c3p_low::{BStaticSender, NoneSender};
+
 use super::*;
 
 // 使用 `libfmls::r2c3p` 来测试
@@ -19,11 +20,8 @@ use super::*;
 
 fn recv_msg<T: Iterator<Item = u8>>(s: &mut MsgSender<T>) -> Vec<u8> {
     let mut o: Vec<u8> = Vec::new();
-    while !s.done() {
-        match s.next() {
-            Some(b) => o.push(b),
-            None => {}
-        }
+    while let Some(b) = s.next() {
+        o.push(b);
     }
     o
 }
@@ -38,7 +36,7 @@ fn msg_sender() {
     assert_eq!(r.feed(m), vec![FeedResult::M(Msg::Req(MsgReq::V))]);
 
     // `C@=0`
-    let mut s = MsgSender::new(b'C', VecSender::new(b"@=0"));
+    let mut s = MsgSender::new(b'C', BStaticSender::new(b"@=0"));
     let m = recv_msg(&mut s);
     assert_eq!(
         r.feed(m),
@@ -48,7 +46,7 @@ fn msg_sender() {
     // `V` (crc32)
     let mut s = MsgSender::new(
         b'V',
-        VecSender::new(b"fmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003 666"),
+        BStaticSender::new(b"fmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003 666"),
     );
     let m = recv_msg(&mut s);
     assert_eq!(
@@ -76,7 +74,7 @@ fn msg_sender() {
     );
 
     // `@`
-    let mut s = MsgSender::new(b'@', VecSender::new(&[0]));
+    let mut s = MsgSender::new(b'@', BStaticSender::new(&[0]));
     let m = recv_msg(&mut s);
     assert_eq!(
         r.feed(m),
@@ -92,8 +90,8 @@ fn v_sender() {
     let mut r = R2c3pServer::new();
 
     // extra = None
-    let v: VSender<VecSender, NoneSender> =
-        VSender::new(b"sled 0.1.0", VecSender::new(b"ch32v003 666"), None);
+    let v: VSender<BStaticSender, NoneSender> =
+        VSender::new(b"sled 0.1.0", BStaticSender::new(b"ch32v003 666"), None);
     let mut s = MsgSender::new(b'V', v);
     let m = recv_msg(&mut s);
     assert_eq!(
@@ -110,10 +108,10 @@ fn v_sender() {
     );
 
     // extra
-    let v: VSender<VecSender, VecSender> = VSender::new(
+    let v: VSender<BStaticSender, BStaticSender> = VSender::new(
         b"sled 0.1.0",
-        VecSender::new(b"ch32v003 666"),
-        Some(VecSender::new(b"hub\n2")),
+        BStaticSender::new(b"ch32v003 666"),
+        Some(BStaticSender::new(b"hub\n2")),
     );
     let mut s = MsgSender::new(b'V', v);
     let m = recv_msg(&mut s);
