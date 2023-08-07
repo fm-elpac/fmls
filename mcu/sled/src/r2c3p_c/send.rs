@@ -9,14 +9,20 @@ use libfmlsm::r2c3p::MSGT_V;
 #[cfg(not(feature = "not-mini"))]
 use libfmlsm::r2c3p_low::{send_msg_0, C0};
 #[cfg(feature = "r2c3p-crc16")]
-use libfmlsm::r2c3p_low::{send_msg_16, C16};
+use libfmlsm::r2c3p_low::{send_msg_16, LowEat, C16};
 #[cfg(feature = "not-mini")]
 use libfmlsm::r2c3p_low::{send_v, C32};
 
 use crate::conf::{FW_VER, HW_NAME};
 
+#[cfg(feature = "r2c3p-crc16")]
+use super::recv::E2_LEN;
+
 /// 所有可发送的消息
 pub enum Sender {
+    /// 默认消息处理
+    #[cfg(feature = "r2c3p-crc16")]
+    Eat(LowEat<E2_LEN>),
     /// 发送 `V` 消息
     #[cfg(feature = "not-mini")]
     V(LowSend<LowVSender<12>, C32, 4>),
@@ -36,6 +42,8 @@ impl Iterator for Sender {
         match self {
             Sender::V(s) => s.next(),
             Sender::D(s) => s.next(),
+            #[cfg(feature = "r2c3p-crc16")]
+            Sender::Eat(s) => s.next(),
         }
     }
 }

@@ -3,10 +3,21 @@
 use libfmlsm::r2c3p as p;
 use libfmlsm::r2c3p_low::LowRecv;
 
+#[cfg(feature = "r2c3p-crc16")]
+use libfmlsm::r2c3p_low::Eat;
+
 use crate::hal::{read_uid, Led};
 use crate::P;
 
 use super::send::{make_d, make_v, Sender};
+
+#[cfg(feature = "r2c3p-crc16")]
+pub const E2_LEN: usize = 2 + 3;
+
+#[cfg(feature = "not-mini")]
+pub const E2_A: [u8; 5] = [0, 0, 0, b'6', b'4'];
+#[cfg(all(not(feature = "not-mini"), feature = "r2c3p-crc16"))]
+pub const E2_A: [u8; 5] = [0, 0, 0, b'3', b'2'];
 
 pub struct Recv {
     // 使用 64 字节接收缓冲区 (crc32)
@@ -16,6 +27,10 @@ pub struct Recv {
     // 使用 32 字节接收缓冲区 (crc16)
     #[cfg(not(feature = "not-mini"))]
     recv: LowRecv<{ 32 + 2 }>,
+
+    // 默认消息处理
+    #[cfg(feature = "r2c3p-crc16")]
+    eat: Eat<E2_LEN>,
 
     // 标记正在发送
     sending: bool,
@@ -29,6 +44,8 @@ impl Recv {
             recv: LowRecv::new(),
             sending: false,
             led_o: false,
+            #[cfg(feature = "r2c3p-crc16")]
+            eat: Eat::new(E2_A),
         }
     }
 
@@ -70,7 +87,11 @@ impl Recv {
                 }
             }
 
-            //  TODO 默认消息处理
+            // 默认消息处理
+            #[cfg(feature = "r2c3p-crc16")]
+            if let Some(m) = self.eat.eat(&self.recv) {
+                return Some(Sender::Eat(m));
+            }
         }
         None
     }

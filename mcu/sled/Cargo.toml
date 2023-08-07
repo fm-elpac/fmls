@@ -26,11 +26,12 @@ default = ["not-mini", "ch32v003f4p6"]
 r2c3p = ["libfmlsm"]
 r2c3p-crc16 = ["libfmlsm/r2c3p-crc16"]
 r2c3p-i = ["r2c3p", "libfmlsm/r2c3p-i"]
+r2c3p-t = ["r2c3p", "libfmlsm/r2c3p-t"]
 r2c3p-cc = ["r2c3p", "libfmlsm/r2c3p-cc"]
 r2c3p-s = ["r2c3p", "libfmlsm/r2c3p-s"]
 r2c3p-full = ["r2c3p", "libfmlsm/r2c3p-full"]
 
-not-mini = ["r2c3p", "r2c3p-crc16", "libfmlsm/r2c3p-crc32"]
+not-mini = ["r2c3p", "r2c3p-crc16", "libfmlsm/r2c3p-crc32", "r2c3p-t"]
 
 ch32v003 = ["ch32v0", "ch32v0/ch32v003"]
 ch32v003f4p6 = ["ch32v003"]  # TSSOP20

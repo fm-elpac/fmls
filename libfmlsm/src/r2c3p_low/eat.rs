@@ -100,7 +100,7 @@ pub struct Eat<const M: usize> {
 }
 
 impl<const M: usize> Eat<M> {
-    pub fn new(len: [u8; M]) -> Self {
+    pub const fn new(len: [u8; M]) -> Self {
         Self {
             len,
             #[cfg(feature = "r2c3p-i")]
