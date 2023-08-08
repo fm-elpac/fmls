@@ -6,10 +6,12 @@ use libfmlsm::r2c3p_low::{LowSend, LowVSender, NoneSender};
 
 #[cfg(not(feature = "not-mini"))]
 use libfmlsm::r2c3p::MSGT_V;
-#[cfg(not(feature = "not-mini"))]
+#[cfg(not(feature = "r2c3p-crc16"))]
 use libfmlsm::r2c3p_low::{send_msg_0, C0};
 #[cfg(feature = "r2c3p-crc16")]
 use libfmlsm::r2c3p_low::{send_msg_16, LowEat, C16};
+#[cfg(not(feature = "not-mini"))]
+use libfmlsm::r2c3p_low::{send_msg_32f, C32F};
 #[cfg(feature = "not-mini")]
 use libfmlsm::r2c3p_low::{send_v, C32};
 
@@ -27,7 +29,7 @@ pub enum Sender {
     #[cfg(feature = "not-mini")]
     V(LowSend<LowVSender<12>, C32, 4>),
     #[cfg(not(feature = "not-mini"))]
-    V(LowSend<LowVSender<12>, C0, 0>),
+    V(LowSend<LowVSender<12>, C32F, 4>),
     /// 发送 `.` 消息
     #[cfg(feature = "r2c3p-crc16")]
     D(LowSend<NoneSender, C16, 2>),
@@ -61,7 +63,11 @@ pub fn make_v(uid: (u32, u32, u32)) -> Sender {
     }
     #[cfg(not(feature = "not-mini"))]
     {
-        Sender::V(send_msg_0(MSGT_V, LowVSender::new(FW_VER, HW_NAME, id)))
+        Sender::V(send_msg_32f(
+            MSGT_V,
+            LowVSender::new(FW_VER, HW_NAME, id),
+            crate::read_vc(),
+        ))
     }
 }
 
