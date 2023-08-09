@@ -165,7 +165,7 @@ pub trait CrcT<const N: usize>: Debug + Clone {
 pub struct C0 {}
 
 impl C0 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
@@ -188,7 +188,7 @@ pub struct C16 {
 
 #[cfg(feature = "r2c3p-crc16")]
 impl C16 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             c: Some(Crc16::new()),
         }
@@ -225,7 +225,7 @@ pub struct C32 {
 
 #[cfg(feature = "r2c3p-crc32")]
 impl C32 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             c: Some(Crc32::new()),
         }
@@ -260,7 +260,7 @@ pub struct C32F {
 }
 
 impl C32F {
-    pub const fn new(c: [u8; 4]) -> Self {
+    pub fn new(c: [u8; 4]) -> Self {
         Self { c }
     }
 }

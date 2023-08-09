@@ -10,7 +10,7 @@ pub struct Fifo<const N: usize> {
 }
 
 impl<const N: usize> Fifo<N> {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self { b: [0; N], i: 0 }
     }
 

@@ -16,6 +16,7 @@ pub fn read_stk_1(p: &P) -> bool {
 }
 
 /// 基于 systick 的定时器, 非阻塞
+#[derive(Debug, Clone, Default)]
 pub struct StkTimer {
     // 计数器比特翻转标志
     b: bool,
@@ -24,10 +25,6 @@ pub struct StkTimer {
 }
 
 impl StkTimer {
-    pub const fn default() -> Self {
-        Self { b: false, i: 0 }
-    }
-
     /// 检查计数器是否到时间
     ///
     /// `stk_1`: [`read_stk_1`] 的结果

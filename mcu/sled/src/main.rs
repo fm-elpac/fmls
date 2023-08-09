@@ -28,7 +28,7 @@ use ch32v103::{init, G};
 
 // 静态分配的全局数据
 // 避免在栈空间动态分配
-static mut SG: G = G::default();
+static mut SG: Option<G> = None;
 
 #[entry]
 #[allow(unsafe_code)]
@@ -38,7 +38,10 @@ fn main() -> ! {
     // 设备初始化
     init(&p);
 
-    let g = unsafe { &mut SG };
+    let g = unsafe {
+        SG = Some(G::default());
+        SG.as_mut().unwrap()
+    };
 
     // 主循环
     loop {

@@ -11,16 +11,12 @@ pub fn init(p: &P) {
 }
 
 /// 存储全局状态信息
+#[derive(Debug, Default)]
 pub struct G {
     // TODO
 }
 
 impl G {
-    // 默认值
-    pub const fn default() -> Self {
-        Self {}
-    }
-
     pub fn one_loop(&mut self, p: &P) {
         // TODO
     }

@@ -34,6 +34,7 @@ pub fn led_off(p: &P) {
 }
 
 /// LED 存储模块内部状态
+#[derive(Debug, Clone)]
 pub struct Led {
     /// LED 亮的时间
     pub t_1: u32,
@@ -46,9 +47,8 @@ pub struct Led {
     t: StkTimer,
 }
 
-impl Led {
-    // 默认值
-    pub const fn default() -> Self {
+impl Default for Led {
+    fn default() -> Self {
         Self {
             t_1: 160,
             t_0: 817,
@@ -56,7 +56,9 @@ impl Led {
             t: StkTimer::default(),
         }
     }
+}
 
+impl Led {
     pub fn one_loop(&mut self, p: &P) -> bool {
         let mut on = false;
         if self.s {

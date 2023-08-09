@@ -25,7 +25,7 @@ pub struct Escape {
 }
 
 impl Escape {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self { next_byte: None }
     }
 
@@ -66,7 +66,7 @@ pub struct Unescape {
 }
 
 impl Unescape {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self { ef: false }
     }
 
@@ -95,9 +95,9 @@ impl Unescape {
 }
 
 #[cfg(feature = "r2c3p-crc16")]
-const C16: Crc<u16> = Crc::<u16>::new(&CRC_16);
+static C16: Crc<u16> = Crc::<u16>::new(&CRC_16);
 #[cfg(feature = "r2c3p-crc32")]
-const C32: Crc<u32> = Crc::<u32>::new(&CRC_32);
+static C32: Crc<u32> = Crc::<u32>::new(&CRC_32);
 
 /// 计算 crc16 (底层)
 #[cfg(feature = "r2c3p-crc16")]
@@ -108,7 +108,7 @@ pub struct Crc16 {
 
 #[cfg(feature = "r2c3p-crc16")]
 impl Crc16 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self { d: C16.digest() }
     }
 
@@ -140,7 +140,7 @@ pub struct Crc32 {
 
 #[cfg(feature = "r2c3p-crc32")]
 impl Crc32 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self { d: C32.digest() }
     }
 

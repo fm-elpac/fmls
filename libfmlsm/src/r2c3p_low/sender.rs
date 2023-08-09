@@ -9,7 +9,7 @@ use crate::r2c3p::BYTE_HEX;
 pub struct NoneSender {}
 
 impl NoneSender {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }

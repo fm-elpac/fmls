@@ -21,6 +21,7 @@ use crate::conf::{FW_VER, HW_NAME};
 use super::recv::E2_LEN;
 
 /// 所有可发送的消息
+#[derive(Debug, Clone)]
 pub enum Sender {
     /// 默认消息处理
     #[cfg(feature = "r2c3p-crc16")]

@@ -55,7 +55,7 @@ pub struct ConfData {
 }
 
 impl ConfData {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             // #[cfg(feature = "r2c3p-cc")]
             // tc: ConfC {

@@ -84,18 +84,12 @@ pub fn init(p: &P) {
 }
 
 /// 存储全局状态信息
+#[derive(Debug, Default)]
 pub struct G {
     c: R2c3pClient,
 }
 
 impl G {
-    // 默认值
-    pub const fn default() -> Self {
-        Self {
-            c: R2c3pClient::default(),
-        }
-    }
-
     pub fn one_loop(&mut self, p: &P) {
         self.c.one_loop(p);
     }

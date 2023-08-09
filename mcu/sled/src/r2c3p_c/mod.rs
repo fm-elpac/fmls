@@ -14,6 +14,7 @@ use recv::Recv;
 use send::Sender;
 
 /// r2c3p 客户端
+#[derive(Debug, Clone, Default)]
 pub struct R2c3pClient {
     led: Led,
 
@@ -24,16 +25,6 @@ pub struct R2c3pClient {
 }
 
 impl R2c3pClient {
-    pub const fn default() -> Self {
-        Self {
-            led: Led::default(),
-            #[cfg(feature = "r2c3p")]
-            s: None,
-            #[cfg(feature = "r2c3p")]
-            r: Recv::default(),
-        }
-    }
-
     pub fn one_loop(&mut self, p: &P) {
         // LED 灯闪烁处理
         let on = self.led.one_loop(p);

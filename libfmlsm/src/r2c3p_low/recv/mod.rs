@@ -49,7 +49,7 @@ pub struct LowRecv<const N: usize> {
 }
 
 impl<const N: usize> LowRecv<N> {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             s: LowRecvS::D,
             b: [0; N],

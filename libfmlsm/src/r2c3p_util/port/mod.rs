@@ -31,8 +31,7 @@ pub struct R2c3pPort<const N: usize> {
 }
 
 impl<const N: usize> R2c3pPort<N> {
-    /// `b_len`: 接收缓冲区的长度
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             r: LowRecv::new(),
             r_lock: false,
@@ -241,7 +240,7 @@ pub struct R2c3pPort8 {
 }
 
 impl R2c3pPort8 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             p: R2c3pPort::new(),
         }
@@ -264,7 +263,7 @@ pub struct R2c3pPort32 {
 }
 
 impl R2c3pPort32 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             p: R2c3pPort::new(),
         }
@@ -287,7 +286,7 @@ pub struct R2c3pPort64 {
 }
 
 impl R2c3pPort64 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             p: R2c3pPort::new(),
         }
@@ -310,7 +309,7 @@ pub struct R2c3pPort128 {
 }
 
 impl R2c3pPort128 {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             p: R2c3pPort::new(),
         }

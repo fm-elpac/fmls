@@ -15,10 +15,11 @@ use super::send::{make_d, make_v, Sender};
 pub const E2_LEN: usize = 2 + 3;
 
 #[cfg(feature = "not-mini")]
-pub const E2_A: [u8; 5] = [0, 0, 0, b'6', b'4'];
+pub static E2_A: [u8; 5] = [0, 0, 0, b'6', b'4'];
 #[cfg(all(not(feature = "not-mini"), feature = "r2c3p-crc16"))]
-pub const E2_A: [u8; 5] = [0, 0, 0, b'3', b'2'];
+pub static E2_A: [u8; 5] = [0, 0, 0, b'3', b'2'];
 
+#[derive(Debug, Clone)]
 pub struct Recv {
     // 使用 64 字节接收缓冲区 (crc32)
     #[cfg(feature = "not-mini")]
@@ -38,8 +39,8 @@ pub struct Recv {
     led_o: bool,
 }
 
-impl Recv {
-    pub const fn default() -> Self {
+impl Default for Recv {
+    fn default() -> Self {
         Self {
             recv: LowRecv::new(),
             sending: false,
@@ -48,7 +49,9 @@ impl Recv {
             eat: Eat::new(E2_A),
         }
     }
+}
 
+impl Recv {
     /// 通知 LED 灯闪烁
     pub fn led_on(&mut self) {
         self.led_o = true;
