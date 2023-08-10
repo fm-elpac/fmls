@@ -1,4 +1,4 @@
-PROVIDE(_hart_stack_size = 1K);
+PROVIDE(_hart_stack_size = 64);
 
 MEMORY
 {

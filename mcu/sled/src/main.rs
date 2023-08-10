@@ -2,8 +2,10 @@
 #![no_main]
 #![deny(unsafe_code)]
 
+use core::arch::asm;
+
 use panic_halt as _;
-use riscv_rt::entry;
+use riscv_rt::{entry, pre_init};
 
 #[cfg(feature = "ch32v003")]
 use ch32v0::ch32v003 as pac;
@@ -30,8 +32,8 @@ use ch32v103::{init, G};
 // 避免在栈空间动态分配
 static mut SG: Option<G> = None;
 
-#[entry]
 #[allow(unsafe_code)]
+#[entry]
 fn main() -> ! {
     // 获取设备外设
     let p = unsafe { P::steal() };
@@ -50,7 +52,7 @@ fn main() -> ! {
     }
 }
 
-/// 发送 `V` 消息的固定 CRC32 值 ("test")
+/// 发送 `V` 消息的固定 CRC32 值 ("tesT")
 ///
 /// 这个值放在 `.data` 段 (RAM 可读写) 之中,
 /// 可以在 `.hex` (Intel HEX) 文件中直接看到 (搜索) 并修改.
@@ -66,4 +68,29 @@ pub static mut VC: [u8; 4] = [0x74, 0x65, 0x73, 0x54];
 #[allow(unsafe_code)]
 fn read_vc() -> [u8; 4] {
     unsafe { VC }
+}
+
+extern "C" {
+    /// 堆起始地址 (在 `.bss` 和 `.data` 节之后)
+    /// 在本程序中, 对应栈的最低地址
+    static _sheap: u8;
+}
+
+/// 清空栈的内存区域
+/// 用于分析栈空间使用情况
+#[allow(unsafe_code)]
+#[pre_init]
+unsafe fn clear_stack() {
+    // 获取当前栈指针
+    let sp: usize;
+    asm!("mv {}, sp", out(reg) sp);
+
+    // 填充数据
+    const FILL: u8 = b'-';
+    // 填充整个栈区域
+    let mut p: *mut u8 = &_sheap as *const u8 as *mut u8;
+    while p < ((sp - 8) as *mut u8) {
+        *p = FILL;
+        p = p.add(1);
+    }
 }
