@@ -26,5 +26,5 @@ lto = true
 strip = "debuginfo"
 
 [patch.crates-io]
-#s2n-tls-sys = { path = "./patch/s2n-tls-sys-0.0.34" }
+#s2n-tls-sys = { path = "./patch/s2n-tls-sys-0.0.35" }
 #aws-lc-rs = { path = "./patch/aws-lc-rs-1.2.1" }
