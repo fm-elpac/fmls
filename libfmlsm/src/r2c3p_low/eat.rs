@@ -5,89 +5,127 @@ use core::iter::Iterator;
 use crate::r2c3p as p;
 
 use super::{
-    send_e2_len, send_e3, send_msg_16, BArraySender, BStaticSender, HexArraySender, LowCSender,
-    LowRecv, LowSend, MsgType, C16,
+    sendc_e2_len, sendc_e3, sendc_msg, BArraySender, BStaticSender, CrcT, HexArraySender,
+    LowCSender, LowRecv, LowSend, MsgType,
 };
 
 #[cfg(feature = "r2c3p-i")]
 use super::hex_u64;
 #[cfg(feature = "r2c3p-o")]
 use super::hex_u8;
+#[cfg(feature = "r2c3p-crc16")]
+use super::C16;
 #[cfg(feature = "r2c3p-c")]
-use super::{read_conf, read_conf_k, send_e4, send_e5, ConfK};
+use super::{read_conf, read_conf_k, sendc_e4, sendc_e5, ConfK};
 
-/// 消息默认处理可能返回的需要发送的消息
+/// 消息默认处理可能返回的需要发送的消息 (CRC16)
 ///
 /// `N`: 缓冲区长度的数组长度 (用于发送消息太长错误).
 /// 详见 `send_e2_len`
+#[cfg(feature = "r2c3p-crc16")]
+pub type LowEat<const N: usize> = LowEatC<N, C16, 2>;
+
+/// 消息默认处理可能需要发送的消息 (不同 CRC 选择)
 #[derive(Debug, Clone)]
-pub enum LowEat<const N: usize> {
+pub enum LowEatC<const N: usize, C: CrcT<M>, const M: usize> {
     /// 比如 `E-2 32`
-    E2(LowSend<BArraySender<N>, C16, 2>),
+    E2(LowSend<BArraySender<N>, C, M>),
     /// 比如 `E-3 c`
-    E3(LowSend<BArraySender<4>, C16, 2>),
+    E3(LowSend<BArraySender<4>, C, M>),
     /// 比如 `E-4`, `E-5`
-    E(LowSend<BStaticSender, C16, 2>),
+    E(LowSend<BStaticSender, C, M>),
     /// 比如 `CcT=`
     #[cfg(feature = "r2c3p-cc")]
-    CHex4(LowSend<LowCSender<HexArraySender<4>>, C16, 2>),
+    CHex4(LowSend<LowCSender<HexArraySender<4>>, C, M>),
     /// 比如 `CI=`
     #[cfg(feature = "r2c3p-i")]
-    CHex8(LowSend<LowCSender<HexArraySender<8>>, C16, 2>),
+    CHex8(LowSend<LowCSender<HexArraySender<8>>, C, M>),
     /// 比如 `CO=`
     #[cfg(feature = "r2c3p-o")]
-    CHex1(LowSend<LowCSender<HexArraySender<1>>, C16, 2>),
+    CHex1(LowSend<LowCSender<HexArraySender<1>>, C, M>),
 }
 
-impl<const N: usize> Iterator for LowEat<N> {
+impl<const N: usize, C: CrcT<M>, const M: usize> Iterator for LowEatC<N, C, M> {
     type Item = u8;
 
     fn next(&mut self) -> Option<u8> {
         match self {
-            LowEat::E2(s) => s.next(),
-            LowEat::E3(s) => s.next(),
-            LowEat::E(s) => s.next(),
+            LowEatC::E2(s) => s.next(),
+            LowEatC::E3(s) => s.next(),
+            LowEatC::E(s) => s.next(),
             #[cfg(feature = "r2c3p-cc")]
-            LowEat::CHex4(s) => s.next(),
+            LowEatC::CHex4(s) => s.next(),
             #[cfg(feature = "r2c3p-i")]
-            LowEat::CHex8(s) => s.next(),
+            LowEatC::CHex8(s) => s.next(),
             #[cfg(feature = "r2c3p-o")]
-            LowEat::CHex1(s) => s.next(),
+            LowEatC::CHex1(s) => s.next(),
         }
     }
 }
 
 /// 发送 `C` 消息 (v: `hex(u8)`)
-pub fn send_c_u8(k: &'static [u8], v: u8) -> LowSend<LowCSender<HexArraySender<1>>, C16, 2> {
+pub fn send_c_u8<C: CrcT<N>, const N: usize>(
+    k: &'static [u8],
+    v: u8,
+    c: C,
+) -> LowSend<LowCSender<HexArraySender<1>>, C, N> {
     let b: [u8; 1] = [v];
-    send_msg_16(p::MSGT_C, LowCSender::new(k, Some(HexArraySender::new(b))))
+    sendc_msg(
+        p::MSGT_C,
+        LowCSender::new(k, Some(HexArraySender::new(b))),
+        c,
+    )
 }
 
 /// 发送 `C` 消息 (v: `hex(u16)`)
-pub fn send_c_u16(k: &'static [u8], v: u16) -> LowSend<LowCSender<HexArraySender<2>>, C16, 2> {
+pub fn send_c_u16<C: CrcT<N>, const N: usize>(
+    k: &'static [u8],
+    v: u16,
+    c: C,
+) -> LowSend<LowCSender<HexArraySender<2>>, C, N> {
     let b: [u8; 2] = u16::to_be_bytes(v);
-    send_msg_16(p::MSGT_C, LowCSender::new(k, Some(HexArraySender::new(b))))
+    sendc_msg(
+        p::MSGT_C,
+        LowCSender::new(k, Some(HexArraySender::new(b))),
+        c,
+    )
 }
 
 /// 发送 `C` 消息 (v: `hex(u32)`)
-pub fn send_c_u32(k: &'static [u8], v: u32) -> LowSend<LowCSender<HexArraySender<4>>, C16, 2> {
+pub fn send_c_u32<C: CrcT<N>, const N: usize>(
+    k: &'static [u8],
+    v: u32,
+    c: C,
+) -> LowSend<LowCSender<HexArraySender<4>>, C, N> {
     let b: [u8; 4] = u32::to_be_bytes(v);
-    send_msg_16(p::MSGT_C, LowCSender::new(k, Some(HexArraySender::new(b))))
+    sendc_msg(
+        p::MSGT_C,
+        LowCSender::new(k, Some(HexArraySender::new(b))),
+        c,
+    )
 }
 
 /// 发送 `C` 消息 (v: `hex(u64)`)
-pub fn send_c_u64(k: &'static [u8], v: u64) -> LowSend<LowCSender<HexArraySender<8>>, C16, 2> {
+pub fn send_c_u64<C: CrcT<N>, const N: usize>(
+    k: &'static [u8],
+    v: u64,
+    c: C,
+) -> LowSend<LowCSender<HexArraySender<8>>, C, N> {
     let b: [u8; 8] = u64::to_be_bytes(v);
-    send_msg_16(p::MSGT_C, LowCSender::new(k, Some(HexArraySender::new(b))))
+    sendc_msg(
+        p::MSGT_C,
+        LowCSender::new(k, Some(HexArraySender::new(b))),
+        c,
+    )
 }
 
 /// 消息默认处理
 ///
 /// `len`: 缓冲区长度 (用于发送消息太长错误)
 #[derive(Debug, Clone)]
-pub struct Eat<const M: usize> {
+pub struct EatC<const N: usize> {
     /// 缓冲区长度数组
-    len: [u8; M],
+    len: [u8; N],
 
     // 处理 `cI` 消息
     #[cfg(feature = "r2c3p-i")]
@@ -99,8 +137,8 @@ pub struct Eat<const M: usize> {
     pub c_on: u8,
 }
 
-impl<const M: usize> Eat<M> {
-    pub fn new(len: [u8; M]) -> Self {
+impl<const N: usize> EatC<N> {
+    pub fn new(len: [u8; N]) -> Self {
         Self {
             len,
             #[cfg(feature = "r2c3p-i")]
@@ -118,7 +156,11 @@ impl<const M: usize> Eat<M> {
     }
 
     /// 默认处理一条消息
-    pub fn eat<const N: usize>(&mut self, r: &LowRecv<N>) -> Option<LowEat<M>> {
+    pub fn eat<const T: usize, C: CrcT<M>, const M: usize>(
+        &mut self,
+        r: &LowRecv<T>,
+        c: C,
+    ) -> Option<LowEatC<N, C, M>> {
         // 检查是否成功接收消息
         if let Some(t) = r.get_t() {
             // 是否为请求消息
@@ -128,7 +170,7 @@ impl<const M: usize> Eat<M> {
             if r.get_e2() {
                 if req {
                     // 对于过长的请求消息, 返回 `E-2` 错误
-                    return Some(LowEat::E2(send_e2_len(self.len)));
+                    return Some(LowEatC::E2(sendc_e2_len(self.len, c)));
                 } else {
                     // 如果不是请求消息, 丢弃
                     return None;
@@ -143,18 +185,18 @@ impl<const M: usize> Eat<M> {
                     match r.get_body() {
                         Some(b) => {
                             let (k, v) = read_conf(b);
-                            return Some(self.eat_c(r, read_conf_k(k), v));
+                            return Some(self.eat_c(r, read_conf_k(k), v, c));
                         }
                         None => {
                             // `E-4` 错误
-                            return Some(LowEat::E(send_e4()));
+                            return Some(LowEatC::E(sendc_e4(c)));
                         }
                     }
                 }
                 _ => {
                     // 未知的请求消息, 返回 `E-3` 错误
                     if req {
-                        return Some(LowEat::E3(send_e3(t)));
+                        return Some(LowEatC::E3(sendc_e3(t, c)));
                     }
                 }
             }
@@ -165,7 +207,13 @@ impl<const M: usize> Eat<M> {
 
     // 处理 `c` 消息
     #[cfg(feature = "r2c3p-c")]
-    fn eat_c<const N: usize>(&mut self, r: &LowRecv<N>, k: ConfK, v: Option<&[u8]>) -> LowEat<M> {
+    fn eat_c<const T: usize, C: CrcT<M>, const M: usize>(
+        &mut self,
+        r: &LowRecv<T>,
+        k: ConfK,
+        v: Option<&[u8]>,
+        c: C,
+    ) -> LowEatC<N, C, M> {
         match k {
             #[cfg(feature = "r2c3p-i")]
             ConfK::I => {
@@ -177,12 +225,12 @@ impl<const M: usize> Eat<M> {
                         }
                         None => {
                             // 消息解析错误
-                            return LowEat::E(send_e4());
+                            return LowEatC::E(sendc_e4(c));
                         }
                     }
                 }
                 // 返回当前值
-                LowEat::CHex8(send_c_u64(p::CONF_I, self.c_i))
+                LowEatC::CHex8(send_c_u64(p::CONF_I, self.c_i, c))
             }
 
             #[cfg(feature = "r2c3p-o")]
@@ -192,10 +240,10 @@ impl<const M: usize> Eat<M> {
                         Some(u) => {
                             self.c_o = u;
                         }
-                        None => return LowEat::E(send_e4()),
+                        None => return LowEatC::E(sendc_e4(c)),
                     }
                 }
-                LowEat::CHex1(send_c_u8(p::CONF_O, self.c_o))
+                LowEatC::CHex1(send_c_u8(p::CONF_O, self.c_o, c))
             }
             #[cfg(feature = "r2c3p-o")]
             ConfK::On => {
@@ -204,39 +252,63 @@ impl<const M: usize> Eat<M> {
                         Some(u) => {
                             self.c_on = u;
                         }
-                        None => return LowEat::E(send_e4()),
+                        None => return LowEatC::E(sendc_e4(c)),
                     }
                 }
-                LowEat::CHex1(send_c_u8(p::CONF_ON, self.c_on))
+                LowEatC::CHex1(send_c_u8(p::CONF_ON, self.c_on, c))
             }
 
             #[cfg(feature = "r2c3p-cc")]
             ConfK::CR => match v {
                 Some(_) => {
                     // 禁止设置值
-                    LowEat::E(send_e5())
+                    LowEatC::E(sendc_e5(c))
                 }
                 None => {
                     // 返回计数器的值
-                    LowEat::CHex4(send_c_u32(p::CONF_CR, r.get_cr()))
+                    LowEatC::CHex4(send_c_u32(p::CONF_CR, r.get_cr(), c))
                 }
             },
             #[cfg(feature = "r2c3p-cc")]
             ConfK::CRd => match v {
                 Some(_) => {
                     // 禁止设置值
-                    LowEat::E(send_e5())
+                    LowEatC::E(sendc_e5(c))
                 }
                 None => {
                     // 返回计数器的值
-                    LowEat::CHex4(send_c_u32(p::CONF_CRD, r.get_crd()))
+                    LowEatC::CHex4(send_c_u32(p::CONF_CRD, r.get_crd(), c))
                 }
             },
 
             _ => {
                 // 不支持的配置项
-                LowEat::E(send_e5())
+                LowEatC::E(sendc_e5(c))
             }
         }
+    }
+}
+
+/// 消息默认处理 (crc16)
+///
+/// `len`: 缓冲区长度 (用于发送消息太长错误)
+#[cfg(feature = "r2c3p-crc16")]
+#[derive(Debug, Clone)]
+pub struct Eat<const N: usize>(EatC<N>);
+
+#[cfg(feature = "r2c3p-crc16")]
+impl<const N: usize> Eat<N> {
+    pub fn new(len: [u8; N]) -> Self {
+        Self(EatC::new(len))
+    }
+
+    #[cfg(feature = "r2c3p-i")]
+    pub fn get_ci(&self) -> u64 {
+        self.0.get_ci()
+    }
+
+    /// 默认处理一条消息
+    pub fn eat<const T: usize>(&mut self, r: &LowRecv<T>) -> Option<LowEatC<N, C16, 2>> {
+        self.0.eat(r, C16::new())
     }
 }

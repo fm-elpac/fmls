@@ -1,7 +1,5 @@
 //! `fmls_r2c3p` 协议工具
 
-// TODO 支持 USB
-
 mod body;
 mod hex;
 mod port;

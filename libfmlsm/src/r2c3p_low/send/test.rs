@@ -28,16 +28,16 @@ fn recv_msg<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize>(
 }
 
 #[test]
-fn test_send_msg_16() {
+fn test_send16_msg() {
     let mut r = R2c3pServer::new();
 
     // `v`
-    let mut s = send_msg_16(b'v', NoneSender::new());
+    let mut s = send16_msg(b'v', NoneSender::new());
     let m = recv_msg(&mut s);
     assert_eq!(r.feed(m), vec![FeedResult::M(Msg::Req(MsgReq::V))]);
 
     // `C@=0`
-    let mut s = send_msg_16(b'C', BStaticSender::new(b"@=0"));
+    let mut s = send16_msg(b'C', BStaticSender::new(b"@=0"));
     let m = recv_msg(&mut s);
     assert_eq!(
         r.feed(m),
@@ -45,7 +45,7 @@ fn test_send_msg_16() {
     );
 
     // `.`
-    let mut s = send_msg_16(b'.', NoneSender::new());
+    let mut s = send16_msg(b'.', NoneSender::new());
     let m = recv_msg(&mut s);
     assert_eq!(
         r.feed(m),
@@ -56,7 +56,7 @@ fn test_send_msg_16() {
     );
 
     // `@`
-    let mut s = send_msg_16(b'@', BArraySender::new([0]));
+    let mut s = send16_msg(b'@', BArraySender::new([0]));
     let m = recv_msg(&mut s);
     assert_eq!(
         r.feed(m),
@@ -68,11 +68,11 @@ fn test_send_msg_16() {
 }
 
 #[test]
-fn test_send_msg_32() {
+fn test_send32_msg() {
     let mut r = R2c3pServer::new();
 
     // `V`
-    let mut s = send_msg_32(
+    let mut s = send32_msg(
         b'V',
         BStaticSender::new(b"fmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003 666"),
     );

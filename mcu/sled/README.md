@@ -38,6 +38,8 @@ Vfmls_r2c3p 0.1.0\nsled 0.1.0\nch32v003f4p6 cdab84aa49bc9a12ffffffff
 
 添加默认消息处理: 6628 字节 (41%) (`libfmlsm::r2c3p_low` 2023-08-08)
 
+只使用 crc16 (`r2c3p`, `r2c3p-crc16`): 5094 字节 (32%)
+
 ### 引脚使用
 
 - ch32v003f4p6 TSSOP20

@@ -7,11 +7,11 @@ use libfmlsm::r2c3p_low::{LowSend, LowVSender, NoneSender};
 #[cfg(not(feature = "not-mini"))]
 use libfmlsm::r2c3p::MSGT_V;
 #[cfg(not(feature = "r2c3p-crc16"))]
-use libfmlsm::r2c3p_low::{send_msg_0, C0};
+use libfmlsm::r2c3p_low::{send0_msg, C0};
 #[cfg(feature = "r2c3p-crc16")]
-use libfmlsm::r2c3p_low::{send_msg_16, LowEat, C16};
+use libfmlsm::r2c3p_low::{send16_msg, LowEat, C16};
 #[cfg(not(feature = "not-mini"))]
-use libfmlsm::r2c3p_low::{send_msg_32f, C32F};
+use libfmlsm::r2c3p_low::{send32f_msg, C32F};
 #[cfg(feature = "not-mini")]
 use libfmlsm::r2c3p_low::{send_v, C32};
 
@@ -64,7 +64,7 @@ pub fn make_v(uid: (u32, u32, u32)) -> Sender {
     }
     #[cfg(not(feature = "not-mini"))]
     {
-        Sender::V(send_msg_32f(
+        Sender::V(send32f_msg(
             MSGT_V,
             LowVSender::new(FW_VER, HW_NAME, id),
             crate::read_vc(),
@@ -76,10 +76,10 @@ pub fn make_v(uid: (u32, u32, u32)) -> Sender {
 pub fn make_d() -> Sender {
     #[cfg(feature = "r2c3p-crc16")]
     {
-        Sender::D(send_msg_16(b'.', NoneSender::new()))
+        Sender::D(send16_msg(b'.', NoneSender::new()))
     }
     #[cfg(not(feature = "r2c3p-crc16"))]
     {
-        Sender::D(send_msg_0(b'.', NoneSender::new()))
+        Sender::D(send0_msg(b'.', NoneSender::new()))
     }
 }

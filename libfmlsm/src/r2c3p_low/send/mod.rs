@@ -3,12 +3,9 @@
 use core::fmt::Debug;
 use core::iter::Iterator;
 
-use crate::r2c3p::{BYTE_EQ, BYTE_LF, BYTE_SPACE, P_VERSION};
-
-#[cfg(feature = "r2c3p-crc32")]
-use crate::r2c3p::MSGT_V;
-#[cfg(feature = "r2c3p-crc16")]
-use crate::r2c3p::{EB_2, EB_3, EB_4, EB_5, MSGT_E};
+use crate::r2c3p::{
+    BYTE_EQ, BYTE_LF, BYTE_SPACE, EB_2, EB_3, EB_4, EB_5, MSGT_E, MSGT_V, P_VERSION,
+};
 
 use super::{BArraySender, BStaticSender, Escape, HexArraySender};
 
@@ -274,26 +271,35 @@ impl CrcT<4> for C32F {
     }
 }
 
-/// 发送一条消息, 不使用 crc
-pub fn send_msg_0<T: Iterator<Item = u8>>(t: u8, d: T) -> LowSend<T, C0, 0> {
-    LowSend::new(t, d, C0::new())
+/// 发送一条消息 (不同 CRC 选择)
+pub fn sendc_msg<T: Iterator<Item = u8>, C: CrcT<N>, const N: usize>(
+    t: u8,
+    d: T,
+    c: C,
+) -> LowSend<T, C, N> {
+    LowSend::new(t, d, c)
 }
 
-/// 发送一条消息, 使用 crc16
+/// 发送一条消息 (不使用 CRC)
+pub fn send0_msg<T: Iterator<Item = u8>>(t: u8, d: T) -> LowSend<T, C0, 0> {
+    sendc_msg(t, d, C0::new())
+}
+
+/// 发送一条消息 (使用 crc16)
 #[cfg(feature = "r2c3p-crc16")]
-pub fn send_msg_16<T: Iterator<Item = u8>>(t: u8, d: T) -> LowSend<T, C16, 2> {
-    LowSend::new(t, d, C16::new())
+pub fn send16_msg<T: Iterator<Item = u8>>(t: u8, d: T) -> LowSend<T, C16, 2> {
+    sendc_msg(t, d, C16::new())
 }
 
-/// 发送一条消息, 使用 crc32
+/// 发送一条消息 (使用 crc32)
 #[cfg(feature = "r2c3p-crc32")]
-pub fn send_msg_32<T: Iterator<Item = u8>>(t: u8, d: T) -> LowSend<T, C32, 4> {
-    LowSend::new(t, d, C32::new())
+pub fn send32_msg<T: Iterator<Item = u8>>(t: u8, d: T) -> LowSend<T, C32, 4> {
+    sendc_msg(t, d, C32::new())
 }
 
-/// 发送一条消息, 使用固定 crc32 值
-pub fn send_msg_32f<T: Iterator<Item = u8>>(t: u8, d: T, c: [u8; 4]) -> LowSend<T, C32F, 4> {
-    LowSend::new(t, d, C32F::new(c))
+/// 发送一条消息 (使用固定 crc32 值)
+pub fn send32f_msg<T: Iterator<Item = u8>>(t: u8, d: T, c: [u8; 4]) -> LowSend<T, C32F, 4> {
+    sendc_msg(t, d, C32F::new(c))
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -384,6 +390,20 @@ impl<const N: usize> Iterator for LowVSender<N> {
     }
 }
 
+/// 发送 `V` 消息 (不同 CRC 选择)
+pub fn sendc_v<const N: usize, C: CrcT<M>, const M: usize>(
+    firmware: &'static [u8],
+    hardware_name: &'static [u8],
+    hardware_id: [u8; N],
+    c: C,
+) -> LowSend<LowVSender<N>, C, M> {
+    sendc_msg(
+        MSGT_V,
+        LowVSender::new(firmware, hardware_name, hardware_id),
+        c,
+    )
+}
+
 /// 发送 `V` 消息
 #[cfg(feature = "r2c3p-crc32")]
 pub fn send_v<const N: usize>(
@@ -391,16 +411,42 @@ pub fn send_v<const N: usize>(
     hardware_name: &'static [u8],
     hardware_id: [u8; N],
 ) -> LowSend<LowVSender<N>, C32, 4> {
-    send_msg_32(
-        MSGT_V,
-        LowVSender::new(firmware, hardware_name, hardware_id),
-    )
+    sendc_v(firmware, hardware_name, hardware_id, C32::new())
+}
+
+/// 发送 `V` 消息 (无 CRC)
+pub fn send0_v<const N: usize>(
+    firmware: &'static [u8],
+    hardware_name: &'static [u8],
+    hardware_id: [u8; N],
+) -> LowSend<LowVSender<N>, C0, 0> {
+    sendc_v(firmware, hardware_name, hardware_id, C0::new())
+}
+
+/// 发送 `E-2` 消息 (不同 CRC 选择)
+pub fn sendc_e2<C: CrcT<N>, const N: usize>(c: C) -> LowSend<BStaticSender, C, N> {
+    sendc_msg(MSGT_E, BStaticSender::new(EB_2), c)
 }
 
 /// 发送 `E-2` 消息 (错误: 消息太长)
 #[cfg(feature = "r2c3p-crc16")]
 pub fn send_e2() -> LowSend<BStaticSender, C16, 2> {
-    send_msg_16(MSGT_E, BStaticSender::new(EB_2))
+    sendc_e2(C16::new())
+}
+
+/// 发送 `E-2` 消息 (无 CRC)
+pub fn send0_e2() -> LowSend<BStaticSender, C0, 0> {
+    sendc_e2(C0::new())
+}
+
+/// 发送 `E-2` 消息, 带缓冲区长度 (不同 CRC 选择)
+pub fn sendc_e2_len<const N: usize, C: CrcT<M>, const M: usize>(
+    mut len: [u8; N],
+    c: C,
+) -> LowSend<BArraySender<N>, C, M> {
+    len[0..2].copy_from_slice(EB_2);
+    len[2] = BYTE_SPACE;
+    sendc_msg(MSGT_E, BArraySender::new(len), c)
 }
 
 /// 发送 `E-2` 消息, 带缓冲区长度, 比如 `E-2 32`
@@ -416,32 +462,65 @@ pub fn send_e2() -> LowSend<BStaticSender, C16, 2> {
 /// send_e2_len(b);  // `E-2 32`
 /// ```
 #[cfg(feature = "r2c3p-crc16")]
-pub fn send_e2_len<const N: usize>(mut len: [u8; N]) -> LowSend<BArraySender<N>, C16, 2> {
-    len[0..2].copy_from_slice(EB_2);
-    len[2] = BYTE_SPACE;
-    send_msg_16(MSGT_E, BArraySender::new(len))
+pub fn send_e2_len<const N: usize>(len: [u8; N]) -> LowSend<BArraySender<N>, C16, 2> {
+    sendc_e2_len(len, C16::new())
+}
+
+/// 发送 `E-2` 消息, 带缓冲区长度 (无 CRC)
+pub fn send0_e2_len<const N: usize>(len: [u8; N]) -> LowSend<BArraySender<N>, C0, 0> {
+    sendc_e2_len(len, C0::new())
+}
+
+/// 发送 `E-3` 消息 (不同 CRC 选择)
+pub fn sendc_e3<C: CrcT<N>, const N: usize>(t: u8, c: C) -> LowSend<BArraySender<4>, C, N> {
+    let mut b: [u8; 4] = [0; 4];
+    b[0..2].copy_from_slice(EB_3);
+    b[2] = BYTE_SPACE;
+    b[3] = t;
+    sendc_msg(MSGT_E, BArraySender::new(b), c)
 }
 
 /// 发送 `E-3` 消息 (错误: 未知的消息类型)
 #[cfg(feature = "r2c3p-crc16")]
 pub fn send_e3(t: u8) -> LowSend<BArraySender<4>, C16, 2> {
-    let mut b: [u8; 4] = [0; 4];
-    b[0..2].copy_from_slice(EB_3);
-    b[2] = BYTE_SPACE;
-    b[3] = t;
-    send_msg_16(MSGT_E, BArraySender::new(b))
+    sendc_e3(t, C16::new())
+}
+
+/// 发送 `E-3` 消息 (无 CRC)
+pub fn send0_e3(t: u8) -> LowSend<BArraySender<4>, C0, 0> {
+    sendc_e3(t, C0::new())
+}
+
+/// 发送 `E-4` 消息 (不同 CRC 选择)
+pub fn sendc_e4<C: CrcT<N>, const N: usize>(c: C) -> LowSend<BStaticSender, C, N> {
+    sendc_msg(MSGT_E, BStaticSender::new(EB_4), c)
 }
 
 /// 发送 `E-4` 消息 (错误: 错误的消息格式)
 #[cfg(feature = "r2c3p-crc16")]
 pub fn send_e4() -> LowSend<BStaticSender, C16, 2> {
-    send_msg_16(MSGT_E, BStaticSender::new(EB_4))
+    sendc_e4(C16::new())
+}
+
+/// 发送 `E-4` 消息 (无 CRC)
+pub fn send0_e4() -> LowSend<BStaticSender, C0, 0> {
+    sendc_e4(C0::new())
+}
+
+/// 发送 `E-5` 消息 (不同 CRC 选择)
+pub fn sendc_e5<C: CrcT<N>, const N: usize>(c: C) -> LowSend<BStaticSender, C, N> {
+    sendc_msg(MSGT_E, BStaticSender::new(EB_5), c)
 }
 
 /// 发送 `E-5` 消息 (错误: 错误的消息参数)
 #[cfg(feature = "r2c3p-crc16")]
 pub fn send_e5() -> LowSend<BStaticSender, C16, 2> {
-    send_msg_16(MSGT_E, BStaticSender::new(EB_5))
+    sendc_e5(C16::new())
+}
+
+/// 发送 `E-5` 消息 (无 CRC)
+pub fn send0_e5() -> LowSend<BStaticSender, C0, 0> {
+    sendc_e5(C0::new())
 }
 
 #[derive(Debug, Clone, PartialEq)]
