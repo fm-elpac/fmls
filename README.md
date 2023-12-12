@@ -4,7 +4,8 @@
 
 胖蚊轻蜘蛛
 
-正式名称: `黄边巨蚊`系列 `家幽灵蛛`软件 (Pholcus phalangioides)
+正式名称: `黄边巨蚊` (Toxorhynchites edwardsi) 系列 `家幽灵蛛` (Pholcus
+phalangioides) 软件
 
 ![CI](https://github.com/fm-elpac/fmls/actions/workflows/ci.yml/badge.svg)
 

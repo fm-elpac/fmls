@@ -13,7 +13,7 @@ categories = ["network-programming", "authentication"]
 [dependencies]
 libfmls = { path = "../libfmls", default-features = false }
 
-log = "^0.4.19"
+log = "^0.4.20"
 env_logger = "^0.10.0"
 
 [build-dependencies]
